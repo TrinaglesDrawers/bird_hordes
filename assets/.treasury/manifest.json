@@ -1,0 +1,23 @@
+{
+  "importers_dirs": [
+    "..\\..\\arcana\\target\\wasm32-wasi\\release"
+  ],
+  "assets": [
+    {
+      "uuid": "9a26039b-9941-4728-9ff8-7ed33b9f51a6",
+      "source": "pengu.gltf.primitive.0",
+      "source_format": "arcana.mesh",
+      "native_format": "arcana.mesh",
+      "tags": [
+        "gltf"
+      ]
+    },
+    {
+      "uuid": "18d6f877-88e8-46f9-b65d-ae23a4b70588",
+      "source": "pengu.gltf",
+      "source_format": "gltf",
+      "native_format": "arcana.object",
+      "tags": []
+    }
+  ]
+}

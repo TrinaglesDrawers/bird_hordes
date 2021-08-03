@@ -6,7 +6,7 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-arcana = { git = "https://github.com/zakarumych/arcana" }
+#arcana = { path = "../arcana" }
+arcana = { git = "https://github.com/zakarumych/arcana.git" }
 rapier3d = "0.10.1"
 rand = "0.8.4"
-genmesh = "0.6"
