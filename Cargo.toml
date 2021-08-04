@@ -1,0 +1,13 @@
+[package]
+name = "bird_hordes"
+version = "0.1.0"
+edition = "2018"
+
+[dependencies]
+arcana = { path = "../arcana" }
+color-eyre = "0.5"
+hecs = "0.5"
+rapier2d = "0.10"
+eyre = "0.6"
+futures = "0.3"
+rand = "0.8"

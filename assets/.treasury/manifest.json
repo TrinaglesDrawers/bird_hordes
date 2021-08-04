@@ -1,0 +1,14 @@
+{
+  "importers_dirs": [
+    "../importers"
+  ],
+  "assets": [
+    {
+      "uuid": "44a9ea43-7f4a-43e1-a7d9-2ee93c6aac84",
+      "source": "bunny.png",
+      "source_format": "image",
+      "native_format": "rgba.png",
+      "tags": []
+    }
+  ]
+}
