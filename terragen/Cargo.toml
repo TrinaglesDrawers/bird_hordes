@@ -1,0 +1,13 @@
+[package]
+name = "terragen"
+version = "0.1.0"
+edition = "2018"
+
+[dependencies]
+bitsetium = "0.0"
+rand = "0.8"
+rand_xoshiro = "0.6"
+arcana = { git = "https://github.com/zakarumych/arcana.git" }
+goods = { version = "0.11" }
+serde = "1.0"
+thiserror = "1.0"

@@ -10,3 +10,8 @@ edition = "2018"
 arcana = { git = "https://github.com/zakarumych/arcana.git" }
 rapier3d = "0.10.1"
 rand = "0.8.4"
+terragen = { path = "terragen" }
+
+
+[workspace]
+members = ["terragen"]
