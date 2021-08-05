@@ -1,0 +1,113 @@
+{
+    "asset" : {
+        "generator" : "Khronos glTF Blender I/O v1.6.16",
+        "version" : "2.0"
+    },
+    "scene" : 0,
+    "scenes" : [
+        {
+            "name" : "Scene",
+            "nodes" : [
+                0
+            ]
+        }
+    ],
+    "nodes" : [
+        {
+            "mesh" : 0,
+            "name" : "hill.corner.inner"
+        }
+    ],
+    "meshes" : [
+        {
+            "name" : "Plane.019",
+            "primitives" : [
+                {
+                    "attributes" : {
+                        "POSITION" : 0,
+                        "NORMAL" : 1,
+                        "TEXCOORD_0" : 2,
+                        "COLOR_0" : 3
+                    },
+                    "indices" : 4
+                }
+            ]
+        }
+    ],
+    "accessors" : [
+        {
+            "bufferView" : 0,
+            "componentType" : 5126,
+            "count" : 18,
+            "max" : [
+                2.003243923187256,
+                1.9999873638153076,
+                1.9997835159301758
+            ],
+            "min" : [
+                -1.9999027252197266,
+                -3.1485305953538045e-06,
+                -2.0072150230407715
+            ],
+            "type" : "VEC3"
+        },
+        {
+            "bufferView" : 1,
+            "componentType" : 5126,
+            "count" : 18,
+            "type" : "VEC3"
+        },
+        {
+            "bufferView" : 2,
+            "componentType" : 5126,
+            "count" : 18,
+            "type" : "VEC2"
+        },
+        {
+            "bufferView" : 3,
+            "componentType" : 5123,
+            "count" : 18,
+            "normalized" : true,
+            "type" : "VEC4"
+        },
+        {
+            "bufferView" : 4,
+            "componentType" : 5123,
+            "count" : 24,
+            "type" : "SCALAR"
+        }
+    ],
+    "bufferViews" : [
+        {
+            "buffer" : 0,
+            "byteLength" : 216,
+            "byteOffset" : 0
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 216,
+            "byteOffset" : 216
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 144,
+            "byteOffset" : 432
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 144,
+            "byteOffset" : 576
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 48,
+            "byteOffset" : 720
+        }
+    ],
+    "buffers" : [
+        {
+            "byteLength" : 768,
+            "uri" : "data:application/octet-stream;base64,0Pz/v1hLU7bo+P8/0Pz/v1hLU7bo+P8/JjUAQEf//z+VE/8/tJX/v5D8/z82dgDAJjUAQJD8/z82dgDAJjUAQJD8/z8AbOy7JjUAQJD8/z8AbOy7AJhUO5D8/z82dgDAAJhUO5D8/z82dgDAAJhUO5D8/z8AbOy7AJhUO5D8/z8AbOy7AJhUO5D8/z8AbOy7AJhUO5D8/z8AbOy7AJhUO5D8/z8AbOy7APjaOpb//z8+hv8/APjaOpb//z8+hv8/Qsn/vzv+/z8AhHO7Qsn/vzv+/z8AhHO7Q0CkuvUtNb/V2zS/pfI0Pz0XNb/oDBo6a80btgAAgL/wdTc48LpUtwAAgL/HOlU3AAAAAAAAgD8AAACAa80btgAAgL/wdTc4AAAAAAAAgD8AAACA8LpUtwAAgL/HOlU3AAAAAAAAgD8AAACAQ0CkuvUtNb/V2zS/8LpUtwAAgL/HOlU3a80btgAAgL/wdTc4AAAAAAAAgD8AAACApfI0Pz0XNb/oDBo6a80btgAAgL/wdTc4pfI0Pz0XNb/oDBo6Q0CkuvUtNb/V2zS/8LpUtwAAgL/HOlU3AAAAAAAAgD8AAAAAAACAPwAAAAAAAIA/AAAAAAAAgD8AAAAAAACAPwAAgD8AAAA/AACAPwAAAD8AAAA/AAAAAAAAAD8AAAAAAAAAPwAAAD8AAAA/AAAAPwAAAD8AAAA/AAAAPwAAAD8AAAA/AAAAPwAAAAAAAIA/AAAAAAAAgD8AAAAAAACAPwAAAAAAAIA/G1UbVYkU//8bVRtViRT//1BWUFaaFf//G1UbVYkU//8bVRtViRT//xtVG1WJFP//G1UbVYkU//8bVRtViRT//xtVG1WJFP//G1UbVYkU//8bVRtViRT//xtVG1WJFP//G1UbVYkU//8bVRtViRT//1BWUFYQFf//UFZQVhAV//8bVRtViRT//xtVG1WJFP//BAAIAAwABAAMAAYAAQANAA8AAAAQAAkADgALAAUADgAFAAIAEQADAAcAEQAHAAoA"
+        }
+    ]
+}

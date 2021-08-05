@@ -1,0 +1,89 @@
+{
+    "tiles": [
+        {
+            "mesh": "cae68cc1-a76f-42c3-bb19-2640d8eb0055"
+        },
+        {
+            "mesh": "5a3ef641-bf17-4628-ad6a-8afe7f4f6f16"
+        },
+        {
+            "mesh": "582c6946-8f57-497d-a1e8-fbe1010deefa"
+        },
+        {
+            "mesh": null
+        },
+        {
+            "mesh": null
+        }
+    ],
+    "neighbours": [
+        [{"id": 0, "side": "north"}, {"id": 0, "side": "north"}],
+        [{"id": 0, "side": "north"}, {"id": 0, "side": "east"}],
+        [{"id": 0, "side": "north"}, {"id": 0, "side": "south"}],
+        [{"id": 0, "side": "north"}, {"id": 0, "side": "west"}],
+        [{"id": 0, "side": "east"}, {"id": 0, "side": "east"}],
+        [{"id": 0, "side": "east"}, {"id": 0, "side": "south"}],
+        [{"id": 0, "side": "east"}, {"id": 0, "side": "west"}],
+        [{"id": 0, "side": "south"}, {"id": 0, "side": "south"}],
+        [{"id": 0, "side": "south"}, {"id": 0, "side": "west"}],
+
+        [{"id": 0, "side": "north"}, {"id": 1, "side": "north"}],
+        [{"id": 0, "side": "east"}, {"id": 1, "side": "north"}],
+        [{"id": 0, "side": "south"}, {"id": 1, "side": "north"}],
+        [{"id": 0, "side": "west"}, {"id": 1, "side": "north"}],
+
+        [{"id": 0, "side": "north"}, {"id": 4, "side": "north"}],
+        [{"id": 0, "side": "north"}, {"id": 4, "side": "east"}],
+        [{"id": 0, "side": "north"}, {"id": 4, "side": "south"}],
+        [{"id": 0, "side": "north"}, {"id": 4, "side": "west"}],
+        [{"id": 0, "side": "east"}, {"id": 4, "side": "east"}],
+        [{"id": 0, "side": "east"}, {"id": 4, "side": "south"}],
+        [{"id": 0, "side": "east"}, {"id": 4, "side": "west"}],
+        [{"id": 0, "side": "south"}, {"id": 4, "side": "south"}],
+        [{"id": 0, "side": "south"}, {"id": 4, "side": "west"}],
+
+        [{"id": 0, "side": "up"}, {"id": 3, "side": "down"}],
+        [{"id": 0, "side": "down"}, {"id": 4, "side": "up"}],
+
+        [{"id": 1, "side": "west"}, {"id": 1, "side": "east"}],
+        [{"id": 1, "side": "west"}, {"id": 2, "side": "east"}],
+        [{"id": 1, "side": "east"}, {"id": 2, "side": "north"}],
+        [{"id": 1, "side": "north"}, {"id": 4, "side": "north"}],
+        [{"id": 1, "side": "north"}, {"id": 4, "side": "east"}],
+        [{"id": 1, "side": "north"}, {"id": 4, "side": "south"}],
+        [{"id": 1, "side": "north"}, {"id": 4, "side": "west"}],
+        [{"id": 1, "side": "south"}, {"id": 3, "side": "north"}],
+        [{"id": 1, "side": "south"}, {"id": 3, "side": "east"}],
+        [{"id": 1, "side": "south"}, {"id": 3, "side": "south"}],
+        [{"id": 1, "side": "south"}, {"id": 3, "side": "west"}],
+
+        [{"id": 1, "side": "up"}, {"id": 3, "side": "down"}],
+        [{"id": 1, "side": "down"}, {"id": 4, "side": "up"}],
+
+        [{"id": 2, "side": "north"}, {"id": 2, "side": "east"}],
+        [{"id": 2, "side": "west"}, {"id": 3, "side": "north"}],
+        [{"id": 2, "side": "west"}, {"id": 3, "side": "east"}],
+        [{"id": 2, "side": "west"}, {"id": 3, "side": "south"}],
+        [{"id": 2, "side": "west"}, {"id": 3, "side": "west"}],
+        [{"id": 2, "side": "south"}, {"id": 3, "side": "north"}],
+        [{"id": 2, "side": "south"}, {"id": 3, "side": "east"}],
+        [{"id": 2, "side": "south"}, {"id": 3, "side": "south"}],
+        [{"id": 2, "side": "south"}, {"id": 3, "side": "west"}],
+
+        [{"id": 2, "side": "up"}, {"id": 3, "side": "down"}],
+        [{"id": 2, "side": "down"}, {"id": 4, "side": "up"}],
+
+        [{"id": 3, "side": "up"}, {"id": 3, "side": "down"}],
+        [{"id": 3, "side": "north"}, {"id": 3, "side": "north"}],
+        [{"id": 3, "side": "north"}, {"id": 3, "side": "east"}],
+        [{"id": 3, "side": "north"}, {"id": 3, "side": "south"}],
+        [{"id": 3, "side": "north"}, {"id": 3, "side": "west"}],
+        
+        [{"id": 4, "side": "up"}, {"id": 4, "side": "down"}],
+        [{"id": 4, "side": "north"}, {"id": 4, "side": "south"}],
+        [{"id": 4, "side": "north"}, {"id": 4, "side": "north"}],
+        [{"id": 4, "side": "north"}, {"id": 4, "side": "east"}],
+        [{"id": 4, "side": "north"}, {"id": 4, "side": "south"}],
+        [{"id": 4, "side": "north"}, {"id": 4, "side": "west"}]
+    ]
+}

@@ -18,6 +18,189 @@
       "source_format": "gltf",
       "native_format": "arcana.object",
       "tags": []
+    },
+    {
+      "uuid": "cae68cc1-a76f-42c3-bb19-2640d8eb0055",
+      "source": "plane.gltf.primitive.0",
+      "source_format": "arcana.mesh",
+      "native_format": "arcana.mesh",
+      "tags": [
+        "gltf"
+      ]
+    },
+    {
+      "uuid": "d2ed223a-3580-4741-9bd9-6ecc9ad9b921",
+      "source": "plane.gltf",
+      "source_format": "gltf",
+      "native_format": "arcana.object",
+      "tags": []
+    },
+    {
+      "uuid": "5a3ef641-bf17-4628-ad6a-8afe7f4f6f16",
+      "source": "slope.gltf.primitive.0",
+      "source_format": "arcana.mesh",
+      "native_format": "arcana.mesh",
+      "tags": [
+        "gltf"
+      ]
+    },
+    {
+      "uuid": "a1f2909f-4f44-42dd-b670-83fb9c079c47",
+      "source": "slope.gltf",
+      "source_format": "gltf",
+      "native_format": "arcana.object",
+      "tags": []
+    },
+    {
+      "uuid": "582c6946-8f57-497d-a1e8-fbe1010deefa",
+      "source": "slope.corner.gltf.primitive.0",
+      "source_format": "arcana.mesh",
+      "native_format": "arcana.mesh",
+      "tags": [
+        "gltf"
+      ]
+    },
+    {
+      "uuid": "b0a4f17a-36a3-495d-8cf5-25eeca96474a",
+      "source": "slope.corner.gltf",
+      "source_format": "gltf",
+      "native_format": "arcana.object",
+      "tags": []
+    },
+    {
+      "uuid": "688ab66a-b154-44db-a361-b26056fcc100",
+      "source": "tileset.json",
+      "source_format": "terragen",
+      "native_format": "terragen",
+      "tags": []
+    },
+    {
+      "uuid": "adf8c558-7f77-4ffe-ba31-6948e7e77f20",
+      "source": "air.debug.gltf.primitive.0",
+      "source_format": "arcana.mesh",
+      "native_format": "arcana.mesh",
+      "tags": [
+        "gltf"
+      ]
+    },
+    {
+      "uuid": "99399106-c114-4a05-804d-fa93ebfd1ec7",
+      "source": "air.debug.gltf",
+      "source_format": "gltf",
+      "native_format": "arcana.object",
+      "tags": []
+    },
+    {
+      "uuid": "bc757486-a0e1-4c5f-b5c6-b7cb13f5c9fe",
+      "source": "solid.debug.gltf.primitive.0",
+      "source_format": "arcana.mesh",
+      "native_format": "arcana.mesh",
+      "tags": [
+        "gltf"
+      ]
+    },
+    {
+      "uuid": "122cfafc-afe6-429b-a008-fb874be94981",
+      "source": "solid.debug.gltf",
+      "source_format": "gltf",
+      "native_format": "arcana.object",
+      "tags": []
+    },
+    {
+      "uuid": "7e27bb93-7465-41c5-90c1-88240d8ea49b",
+      "source": "hill.gltf.primitive.0",
+      "source_format": "arcana.mesh",
+      "native_format": "arcana.mesh",
+      "tags": [
+        "gltf"
+      ]
+    },
+    {
+      "uuid": "399dead8-ff4d-4060-b7bf-be1c5cd4c31b",
+      "source": "hill.gltf",
+      "source_format": "gltf",
+      "native_format": "arcana.object",
+      "tags": []
+    },
+    {
+      "uuid": "f401352c-b513-447a-a460-63c6858034cd",
+      "source": "hill.corner.gltf.primitive.0",
+      "source_format": "arcana.mesh",
+      "native_format": "arcana.mesh",
+      "tags": [
+        "gltf"
+      ]
+    },
+    {
+      "uuid": "95aeb4aa-ea55-4961-94fd-2895caa5e1fe",
+      "source": "hill.corner.gltf",
+      "source_format": "gltf",
+      "native_format": "arcana.object",
+      "tags": []
+    },
+    {
+      "uuid": "9fb4ce52-c8cc-48a7-ac46-39867c2d4f7a",
+      "source": "slope.corner.inner.gltf.primitive.0",
+      "source_format": "arcana.mesh",
+      "native_format": "arcana.mesh",
+      "tags": [
+        "gltf"
+      ]
+    },
+    {
+      "uuid": "3abe12da-5210-49a0-b64a-1bb71a52470a",
+      "source": "slope.corner.inner.gltf",
+      "source_format": "gltf",
+      "native_format": "arcana.object",
+      "tags": []
+    },
+    {
+      "uuid": "7c60d2ed-9073-471e-b44c-6556589e5ef6",
+      "source": "hill.corner.inner.gltf.primitive.0",
+      "source_format": "arcana.mesh",
+      "native_format": "arcana.mesh",
+      "tags": [
+        "gltf"
+      ]
+    },
+    {
+      "uuid": "80c01196-3c02-4590-bf94-49b6fdd0d3a1",
+      "source": "hill.corner.inner.gltf",
+      "source_format": "gltf",
+      "native_format": "arcana.object",
+      "tags": []
+    },
+    {
+      "uuid": "c716ed6a-822a-4543-a090-f2fe3b573b32",
+      "source": "slope.inward.gltf.primitive.0",
+      "source_format": "arcana.mesh",
+      "native_format": "arcana.mesh",
+      "tags": [
+        "gltf"
+      ]
+    },
+    {
+      "uuid": "ca001efd-0934-4003-a3d5-661d82321570",
+      "source": "slope.inward.gltf",
+      "source_format": "gltf",
+      "native_format": "arcana.object",
+      "tags": []
+    },
+    {
+      "uuid": "23820310-d229-41db-a2f6-91770f9fa217",
+      "source": "slope.outward.gltf.primitive.0",
+      "source_format": "arcana.mesh",
+      "native_format": "arcana.mesh",
+      "tags": [
+        "gltf"
+      ]
+    },
+    {
+      "uuid": "26497d55-ae2d-4d25-b4bd-aced1371479e",
+      "source": "slope.outward.gltf",
+      "source_format": "gltf",
+      "native_format": "arcana.object",
+      "tags": []
     }
   ]
 }

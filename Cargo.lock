@@ -87,7 +87,7 @@ dependencies = [
 [[package]]
 name = "arcana"
 version = "0.1.0"
-source = "git+https://github.com/zakarumych/arcana.git#07ad2f71a7255933d62ce3572f26938e49cc57c7"
+source = "git+https://github.com/zakarumych/arcana.git#67e072b75d46910851b79dad606eb632ecf59c45"
 dependencies = [
  "ahash 0.7.4",
  "approx 0.5.0",
@@ -137,7 +137,7 @@ dependencies = [
 [[package]]
 name = "arcana-mesh-file"
 version = "0.1.0"
-source = "git+https://github.com/zakarumych/arcana.git#07ad2f71a7255933d62ce3572f26938e49cc57c7"
+source = "git+https://github.com/zakarumych/arcana.git#67e072b75d46910851b79dad606eb632ecf59c45"
 dependencies = [
  "serde",
 ]
@@ -145,7 +145,7 @@ dependencies = [
 [[package]]
 name = "arcana-proc"
 version = "0.1.0"
-source = "git+https://github.com/zakarumych/arcana.git#07ad2f71a7255933d62ce3572f26938e49cc57c7"
+source = "git+https://github.com/zakarumych/arcana.git#67e072b75d46910851b79dad606eb632ecf59c45"
 dependencies = [
  "arcana-time",
 ]
@@ -153,7 +153,7 @@ dependencies = [
 [[package]]
 name = "arcana-time"
 version = "0.1.0"
-source = "git+https://github.com/zakarumych/arcana.git#07ad2f71a7255933d62ce3572f26938e49cc57c7"
+source = "git+https://github.com/zakarumych/arcana.git#67e072b75d46910851b79dad606eb632ecf59c45"
 dependencies = [
  "serde",
 ]
@@ -211,9 +211,12 @@ name = "bird_hordes"
 version = "0.1.0"
 dependencies = [
  "arcana",
+ "eyre",
  "rand 0.8.4",
  "rapier3d",
+ "sierra",
  "terragen",
+ "tracing",
 ]
 
 [[package]]
@@ -2764,6 +2767,7 @@ dependencies = [
  "rand_xoshiro",
  "serde",
  "thiserror",
+ "tracing",
 ]
 
 [[package]]
