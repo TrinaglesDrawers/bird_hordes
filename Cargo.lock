@@ -211,8 +211,10 @@ name = "bird_hordes"
 version = "0.1.0"
 dependencies = [
  "arcana",
+ "hound",
  "rand 0.8.4",
  "rapier3d",
+ "soundio",
 ]
 
 [[package]]
@@ -316,6 +318,15 @@ dependencies = [
  "num-integer",
  "num-traits 0.2.14",
  "winapi",
+]
+
+[[package]]
+name = "cmake"
+version = "0.1.45"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "eb6210b637171dfba4cda12e579ac6dc73f5165ad56133e5d72ef3131f320855"
+dependencies = [
+ "cc",
 ]
 
 [[package]]
@@ -1211,6 +1222,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "hound"
+version = "3.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8a164bb2ceaeff4f42542bdb847c41517c78a60f5649671b2a07312b6e117549"
+
+[[package]]
 name = "ident_case"
 version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1356,6 +1373,16 @@ checksum = "6f84d96438c15fcd6c3f244c8fce01d1e2b9c6b5623e9c711dc9286d8fc92d6a"
 dependencies = [
  "cfg-if 1.0.0",
  "winapi",
+]
+
+[[package]]
+name = "libsoundio-sys"
+version = "0.3.0"
+source = "git+https://github.com/phip1611/soundio-rs?branch=fix-libsoundio-sys-build-link-linux#ba06fcebd16dd3c7450b4bc888b3da15f40a10f9"
+dependencies = [
+ "cc",
+ "cmake",
+ "pkg-config",
 ]
 
 [[package]]
@@ -2600,6 +2627,14 @@ dependencies = [
  "wayland-client",
  "wayland-cursor",
  "wayland-protocols",
+]
+
+[[package]]
+name = "soundio"
+version = "0.2.1"
+source = "git+https://github.com/phip1611/soundio-rs?branch=fix-libsoundio-sys-build-link-linux#ba06fcebd16dd3c7450b4bc888b3da15f40a10f9"
+dependencies = [
+ "libsoundio-sys",
 ]
 
 [[package]]

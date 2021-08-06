@@ -10,3 +10,5 @@ edition = "2018"
 arcana = { git = "https://github.com/zakarumych/arcana.git" }
 rapier3d = "0.10.1"
 rand = "0.8.4"
+soundio = { git = "https://github.com/phip1611/soundio-rs", branch = "fix-libsoundio-sys-build-link-linux" }
+hound = "3.4.0"
