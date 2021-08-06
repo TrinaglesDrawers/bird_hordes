@@ -3,9 +3,6 @@ name = "bird_hordes"
 version = "0.1.0"
 edition = "2018"
 
-[features]
-extended-key-value-attributes = []
-
 [dependencies]
 # arcana = { path = "../arcana" }
 arcana = { git = "https://github.com/zakarumych/arcana.git" }
@@ -15,4 +12,4 @@ rapier3d = "0.10.1"
 eyre = "0.6"
 # futures = "0.3"
 rand = "0.8"
-# pathfinding = "2.2.1"
+pathfinding = { version = "2.2.1" }

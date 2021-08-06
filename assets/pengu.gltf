@@ -1,7 +1,7 @@
 {
     "asset" : {
         "generator" : "Khronos glTF Blender I/O v1.6.16",
-        "version" : "2.0"
+        "version": "2.0"
     },
     "scene" : 0,
     "scenes" : [
@@ -26,7 +26,6 @@
                     "attributes" : {
                         "POSITION" : 0,
                         "NORMAL" : 1,
-                        "TEXCOORD_0" : 2,
                         "COLOR_0" : 3
                     },
                     "indices" : 4

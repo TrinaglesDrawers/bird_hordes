@@ -1,68 +1,10 @@
 {
   "importers_dirs": [
-    "..\\..\\arcana\\target\\wasm32-wasi\\release"
+    "..\\importers"
   ],
   "assets": [
     {
-      "uuid": "44a9ea43-7f4a-43e1-a7d9-2ee93c6aac84",
-      "source": "bunny.png",
-      "source_format": "image",
-      "native_format": "rgba.png",
-      "tags": []
-    },
-    {
-      "uuid": "a7040263-199b-4248-9186-c559a89ddd07",
-      "source": "cube.gltf.primitive.0",
-      "source_format": "arcana.mesh",
-      "native_format": "arcana.mesh",
-      "tags": [
-        "gltf"
-      ]
-    },
-    {
-      "uuid": "f68f4069-fdd0-4748-9061-ce89ac8f716d",
-      "source": "cube.gltf",
-      "source_format": "gltf",
-      "native_format": "arcana.object",
-      "tags": []
-    },
-    {
-      "uuid": "8e1d6800-8971-403c-9801-44dd929c154b",
-      "source": "test.png",
-      "source_format": "image",
-      "native_format": "rgba.png",
-      "tags": [
-        "texture",
-        "gltf"
-      ]
-    },
-    {
-      "uuid": "43ed1282-59b4-4265-9b78-f32f45297164",
-      "source": "test.gltf.primitive.0",
-      "source_format": "arcana.mesh",
-      "native_format": "arcana.mesh",
-      "tags": [
-        "gltf"
-      ]
-    },
-    {
-      "uuid": "81360b1e-10b6-410f-9b53-ffc6ad207a74",
-      "source": "test.gltf.primitive.1",
-      "source_format": "arcana.mesh",
-      "native_format": "arcana.mesh",
-      "tags": [
-        "gltf"
-      ]
-    },
-    {
-      "uuid": "e1a2ce50-8f94-4157-928e-bfe1b4d39e84",
-      "source": "test.gltf",
-      "source_format": "gltf",
-      "native_format": "arcana.object",
-      "tags": []
-    },
-    {
-      "uuid": "d4b8fcdd-d4c8-4825-89d9-7e327485fb40",
+      "uuid": "df39333e-5e22-4d4c-b08c-b70f2215b1c6",
       "source": "pengu.gltf.primitive.0",
       "source_format": "arcana.mesh",
       "native_format": "arcana.mesh",
@@ -71,8 +13,40 @@
       ]
     },
     {
-      "uuid": "42f9feac-d11a-4b2f-9c0b-358166237958",
+      "uuid": "1c9762a5-26ff-40b9-a47e-b9c5621a771a",
       "source": "pengu.gltf",
+      "source_format": "gltf",
+      "native_format": "arcana.object",
+      "tags": []
+    },
+    {
+      "uuid": "cb947fc4-0cb5-43d7-ad58-a1ea0284b566",
+      "source": "cube.gltf.primitive.0",
+      "source_format": "arcana.mesh",
+      "native_format": "arcana.mesh",
+      "tags": [
+        "gltf"
+      ]
+    },
+    {
+      "uuid": "0cf76cc1-93f1-47d0-8687-45868725c4fa",
+      "source": "cube.gltf",
+      "source_format": "gltf",
+      "native_format": "arcana.object",
+      "tags": []
+    },
+    {
+      "uuid": "618fb5ed-79d7-400f-bae0-65a846207cee",
+      "source": "tile.gltf.primitive.0",
+      "source_format": "arcana.mesh",
+      "native_format": "arcana.mesh",
+      "tags": [
+        "gltf"
+      ]
+    },
+    {
+      "uuid": "0115fcef-c92c-431a-abc6-d4522c95e15a",
+      "source": "tile.gltf",
       "source_format": "gltf",
       "native_format": "arcana.object",
       "tags": []
