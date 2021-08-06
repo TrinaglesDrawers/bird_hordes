@@ -1,6 +1,6 @@
 {
   "importers_dirs": [
-    "..\\..\\arcana\\target\\wasm32-wasi\\release"
+    "/bunny/.cargo/git/checkouts/arcana-bbf9a959c6d4ccbd/67e072b/target/wasm32-wasi/release/"
   ],
   "assets": [
     {
@@ -15,22 +15,6 @@
     {
       "uuid": "18d6f877-88e8-46f9-b65d-ae23a4b70588",
       "source": "pengu.gltf",
-      "source_format": "gltf",
-      "native_format": "arcana.object",
-      "tags": []
-    },
-    {
-      "uuid": "cae68cc1-a76f-42c3-bb19-2640d8eb0055",
-      "source": "plane.gltf.primitive.0",
-      "source_format": "arcana.mesh",
-      "native_format": "arcana.mesh",
-      "tags": [
-        "gltf"
-      ]
-    },
-    {
-      "uuid": "d2ed223a-3580-4741-9bd9-6ecc9ad9b921",
-      "source": "plane.gltf",
       "source_format": "gltf",
       "native_format": "arcana.object",
       "tags": []
