@@ -1,6 +1,6 @@
 {
   "importers_dirs": [
-    "../importers"
+    "..\\..\\arcana\\target\\wasm32-wasi\\release"
   ],
   "assets": [
     {

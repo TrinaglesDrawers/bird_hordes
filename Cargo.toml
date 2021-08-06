@@ -9,10 +9,10 @@ extended-key-value-attributes = []
 [dependencies]
 # arcana = { path = "../arcana" }
 arcana = { git = "https://github.com/zakarumych/arcana.git" }
-color-eyre = "0.5"
-hecs = "0.5"
-rapier3d = "0.10"
+# color-eyre = "0.5"
+# hecs = "0.5"
+rapier3d = "0.10.1"
 eyre = "0.6"
-futures = "0.3"
+# futures = "0.3"
 rand = "0.8"
-pathfinding = "2.2.1"
+# pathfinding = "2.2.1"
