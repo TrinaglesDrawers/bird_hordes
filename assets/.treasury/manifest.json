@@ -50,6 +50,22 @@
       "source_format": "gltf",
       "native_format": "arcana.object",
       "tags": []
+    },
+    {
+      "uuid": "48b510ad-bd44-4e64-859b-9b74f4faf6d9",
+      "source": "nest.gltf.primitive.0",
+      "source_format": "arcana.mesh",
+      "native_format": "arcana.mesh",
+      "tags": [
+        "gltf"
+      ]
+    },
+    {
+      "uuid": "b42375dc-577d-4ec4-9006-44a1ee8850cd",
+      "source": "nest.gltf",
+      "source_format": "gltf",
+      "native_format": "arcana.object",
+      "tags": []
     }
   ]
 }

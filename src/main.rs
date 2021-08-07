@@ -1,10 +1,13 @@
+use crate::systems::bunny_systems::BunnyBehaviourComponent;
+use crate::systems::bunny_systems::BunnyBehaviourState;
 use crate::systems::bunny_systems::BunnyGridComponent;
 use crate::systems::bunny_systems::BunnyMoveComponent;
+use crate::systems::bunny_systems::BunnyMovementState;
 use crate::systems::bunny_systems::BunnyTTLComponent;
 
 use arcana::camera::FreeCamera3Controller;
 use pathfinding;
-use rand::Rng;
+use rand::{thread_rng, Rng};
 use {arcana::*, rapier3d::na};
 
 mod systems {
@@ -24,6 +27,7 @@ impl Bunny {
         let mut res = cx.res;
 
         let params = res.get::<MapParams>().unwrap();
+        let globalTargets = res.get::<GlobalTargets>().unwrap();
         let mut grid = res.get::<pathfinding::grid::Grid>().unwrap().clone();
 
         let scales = [
@@ -33,14 +37,54 @@ impl Bunny {
             arcana::graphics::Scale(na::Vector3::new(1.0, 1.0, 1.0)),
             arcana::graphics::Scale(na::Vector3::new(1.1, 2.0, 1.1)),
         ];
-        let mut rng = rand::thread_rng();
+        let mut rng = thread_rng();
 
-        let mut xcoord = rng.gen_range(0..params.tiles_dimension.0);
-        let mut ycoord = rng.gen_range(0..params.tiles_dimension.1);
+        let variants = [
+            (
+                rng.gen_range(0..params.tiles_dimension.0),
+                rng.gen_range(0..2),
+            ),
+            (
+                rng.gen_range(0..params.tiles_dimension.0),
+                rng.gen_range(params.tiles_dimension.1 - 2..params.tiles_dimension.1),
+            ),
+            (
+                rng.gen_range(0..2),
+                rng.gen_range(0..params.tiles_dimension.1),
+            ),
+            (
+                rng.gen_range(params.tiles_dimension.0 - 2..params.tiles_dimension.0),
+                rng.gen_range(0..params.tiles_dimension.1),
+            ),
+        ];
+        let variant = rng.gen_range(0..4);
+        let mut xcoord = variants[variant].0;
+        let mut ycoord = variants[variant].1;
 
-        while (!grid.has_vertex(&(xcoord as usize, ycoord as usize))) {
-            xcoord = rng.gen_range(0..params.tiles_dimension.0);
-            ycoord = rng.gen_range(0..params.tiles_dimension.1);
+        while !grid.has_vertex(&(xcoord as usize, ycoord as usize))
+            || globalTargets.targets.contains(&(xcoord, ycoord))
+        {
+            let variants = [
+                (
+                    rng.gen_range(0..params.tiles_dimension.0),
+                    rng.gen_range(0..2),
+                ),
+                (
+                    rng.gen_range(0..params.tiles_dimension.0),
+                    rng.gen_range(params.tiles_dimension.1 - 2..params.tiles_dimension.1),
+                ),
+                (
+                    rng.gen_range(0..2),
+                    rng.gen_range(0..params.tiles_dimension.1),
+                ),
+                (
+                    rng.gen_range(params.tiles_dimension.0 - 2..params.tiles_dimension.0),
+                    rng.gen_range(0..params.tiles_dimension.1),
+                ),
+            ];
+            let variant = rng.gen_range(0..4);
+            xcoord = variants[variant].0;
+            ycoord = variants[variant].1;
         }
 
         let _speed: i32 = rng.gen_range(1..5);
@@ -67,10 +111,7 @@ impl Bunny {
                     params.steps.1 * ycoord as f32 - params.physical_len.1 / 2.0,
                 ),
                 move_lerp: 0.0,
-            },
-            BunnyTTLComponent {
-                ttl: rng.gen_range(2.0..16.0),
-                lived: 0.0,
+                state: BunnyMovementState::Idle,
             },
             BunnyGridComponent {
                 xcoord: xcoord,
@@ -80,6 +121,29 @@ impl Bunny {
             // object.primitives[0].mesh.clone(),
             scales[rng.gen_range(0..scales.len())],
         ));
+
+        if rng.gen_range(0..3) >= 1 {
+            cx.world.insert_one(
+                entity,
+                BunnyBehaviourComponent {
+                    state: BunnyBehaviourState::TargetLock,
+                },
+            );
+        } else {
+            cx.world.insert_one(
+                entity,
+                BunnyBehaviourComponent {
+                    state: BunnyBehaviourState::Wandering,
+                },
+            );
+            cx.world.insert_one(
+                entity,
+                BunnyTTLComponent {
+                    ttl: rng.gen_range(4.0..32.0),
+                    lived: 0.0,
+                },
+            );
+        }
 
         cx.spawner.spawn(async move {
             let mut handle = handle.await;
@@ -115,13 +179,16 @@ impl Stone {
         let res = cx.res;
         let mut grid = res.get::<pathfinding::grid::Grid>().unwrap().clone();
         let params = res.get::<MapParams>().unwrap();
+        let globalTargets = res.get::<GlobalTargets>().unwrap();
 
         let mut rng = rand::thread_rng();
 
         let mut xcoord = rng.gen_range(0..params.tiles_dimension.0);
         let mut ycoord = rng.gen_range(0..params.tiles_dimension.1);
 
-        while (!grid.has_vertex(&(xcoord as usize, ycoord as usize))) {
+        while !grid.has_vertex(&(xcoord as usize, ycoord as usize))
+            || globalTargets.targets.contains(&(xcoord, ycoord))
+        {
             xcoord = rng.gen_range(0..params.tiles_dimension.0);
             ycoord = rng.gen_range(0..params.tiles_dimension.1);
         }
@@ -173,6 +240,11 @@ struct BunnyCount {
 }
 
 #[derive(Clone, Debug)]
+struct GlobalTargets {
+    targets: Vec<(i32, i32)>,
+}
+
+#[derive(Clone, Debug)]
 struct MapParams {
     tiles_dimension: (i32, i32),
     physical_min: (f32, f32),
@@ -215,16 +287,16 @@ fn main() {
 
         game.control.add_global_controller(controller1);
 
-        let mut grid = pathfinding::grid::Grid::new(48, 48);
+        let mut grid = pathfinding::grid::Grid::new(64, 64);
         grid.enable_diagonal_mode();
         grid.fill();
 
         game.res.insert(grid);
 
         let mut params = MapParams {
-            tiles_dimension: (48, 48),
-            physical_min: (-15.0, -15.0),
-            physical_max: (15.0, 15.0),
+            tiles_dimension: (64, 64),
+            physical_min: (-20.0, -20.0),
+            physical_max: (20.0, 20.0),
             physical_len: (0.0, 0.0),
             steps: (0.0, 0.0),
         };
@@ -242,46 +314,97 @@ fn main() {
         params.physical_len = physical_len;
         params.steps = steps;
 
+        // let mut handle = game
+        //     .loader
+        //     .load::<assets::object::Object>(
+        //         &"0115fcef-c92c-431a-abc6-d4522c95e15a".parse().unwrap(),
+        //     )
+        //     .await;
+        // let object = handle.get(&mut game.graphics)?;
+        // // let step = (params.physical_max.0 - params.physical_min.0) / params.tiles_dimension.0;
+        // for i in 0..params.tiles_dimension.0 {
+        //     for j in 0..params.tiles_dimension.1 {
+        //         game.world.spawn((
+        //             object.primitives[0].mesh.clone(),
+        //             Global3::new(
+        //                 na::Translation3::new(
+        //                     steps.0 * i as f32 - physical_len.0 / 2.0,
+        //                     0.0,
+        //                     steps.1 * j as f32 - physical_len.1 / 2.0,
+        //                 )
+        //                 .into(),
+        //             ),
+        //             arcana::graphics::Scale(na::Vector3::new(0.25, 0.25, 0.25)),
+        //         ));
+        //     }
+        // }
+
+        let mut globalTargets = GlobalTargets {
+            targets: Vec::<(i32, i32)>::new(),
+        };
+
+        let targets_max_count = 5;
+
         let mut handle = game
             .loader
             .load::<assets::object::Object>(
-                &"0115fcef-c92c-431a-abc6-d4522c95e15a".parse().unwrap(),
+                &"b42375dc-577d-4ec4-9006-44a1ee8850cd".parse().unwrap(),
             )
             .await;
         let object = handle.get(&mut game.graphics)?;
-        // let step = (params.physical_max.0 - params.physical_min.0) / params.tiles_dimension.0;
-        for i in 0..params.tiles_dimension.0 {
-            for j in 0..params.tiles_dimension.1 {
-                game.world.spawn((
-                    object.primitives[0].mesh.clone(),
-                    Global3::new(
-                        na::Translation3::new(
-                            steps.0 * i as f32 - physical_len.0 / 2.0,
-                            0.0,
-                            steps.1 * j as f32 - physical_len.1 / 2.0,
-                        )
-                        .into(),
-                    ),
-                    arcana::graphics::Scale(na::Vector3::new(0.25, 0.25, 0.25)),
-                ));
-            }
+
+        let mut rng = rand::thread_rng();
+
+        for _ in 0..rng.gen_range(3..targets_max_count + 1) {
+            let mut xcoord =
+                rng.gen_range(params.tiles_dimension.0 / 3..params.tiles_dimension.0 / 3 * 2);
+            let mut ycoord =
+                rng.gen_range(params.tiles_dimension.1 / 3..params.tiles_dimension.1 / 3 * 2);
+
+            // while (!grid.has_vertex(&(xcoord as usize, ycoord as usize))) {
+            //     xcoord = rng.gen_range(0..params.tiles_dimension.0);
+            //     ycoord = rng.gen_range(0..params.tiles_dimension.1);
+            // }
+
+            game.world.spawn((
+                object.primitives[0].mesh.clone(),
+                Global3::new(
+                    na::Translation3::new(
+                        steps.0 * xcoord as f32 - physical_len.0 / 2.0,
+                        0.0,
+                        steps.1 * ycoord as f32 - physical_len.1 / 2.0,
+                    )
+                    .into(),
+                ),
+                arcana::graphics::Scale(na::Vector3::new(0.25, 0.25, 0.25)),
+            ));
+
+            globalTargets.targets.push((xcoord, ycoord));
         }
+
+        game.res.insert(globalTargets);
+
         game.res.insert(params);
 
-        let start = 256;
+        // let start = 1;
 
-        for _ in 0..256 {
+        for _ in 0..512 {
             let stome = Stone.spawn(game.cx());
         }
 
-        for _ in 0..start {
-            game.res.with(BunnyCount::default).count = start;
+        game.res.with(BunnyCount::default).count = 0;
+        // for _ in 0..start {
+        //     game.res.with(BunnyCount::default).count = start;
 
-            let bunny = Bunny.spawn(game.cx());
-        }
+        //     let bunny = Bunny.spawn(game.cx());
+        // }
 
         game.scheduler
             .add_system(systems::bunny_systems::BunnyMoveSystem);
+        game.scheduler.add_fixed_system(
+            systems::bunny_systems::BunnyTargetingSystem,
+            TimeSpan::from_millis(333),
+        );
         game.scheduler
             .add_system(systems::bunny_systems::BunnyTTLSystem);
 
