@@ -21,7 +21,10 @@ impl Bunny {
             &"1c9762a5-26ff-40b9-a47e-b9c5621a771a".parse().unwrap(),
         );
 
-        let mut grid = cx.res.get_mut::<pathfinding::grid::Grid>().unwrap();
+        let mut res = cx.res;
+
+        let params = res.get::<MapParams>().unwrap();
+        let mut grid = res.get::<pathfinding::grid::Grid>().unwrap().clone();
 
         let scales = [
             arcana::graphics::Scale(na::Vector3::new(0.5, 1.0, 0.5)),
@@ -32,38 +35,36 @@ impl Bunny {
         ];
         let mut rng = rand::thread_rng();
 
-        let mut xcoord = rng.gen_range(0..32);
-        let mut ycoord = rng.gen_range(0..32);
+        let mut xcoord = rng.gen_range(0..params.tiles_dimension.0);
+        let mut ycoord = rng.gen_range(0..params.tiles_dimension.1);
 
         while (!grid.has_vertex(&(xcoord as usize, ycoord as usize))) {
-            xcoord = rng.gen_range(0..32);
-            ycoord = rng.gen_range(0..32);
+            xcoord = rng.gen_range(0..params.tiles_dimension.0);
+            ycoord = rng.gen_range(0..params.tiles_dimension.1);
         }
 
-        let step = 20.0 / 32.0;
-
-        // let _speed: f32 = rng.gen_range(0.05..0.5);
+        let _speed: i32 = rng.gen_range(1..5);
         let entity = cx.world.spawn((
             self,
             Global3::new(
                 na::Translation3::new(
-                    step * xcoord as f32 - 10.0,
+                    params.steps.0 * xcoord as f32 - params.physical_len.0 / 2.0,
                     0.0,
-                    step * ycoord as f32 - 10.0,
+                    params.steps.1 * ycoord as f32 - params.physical_len.1 / 2.0,
                 )
                 .into(),
             ),
             BunnyMoveComponent {
                 speed: 5.0,
                 destination: na::Vector3::new(
-                    step * xcoord as f32 - 10.0,
+                    params.steps.0 * xcoord as f32 - params.physical_len.0 / 2.0,
                     0.0,
-                    step * ycoord as f32 - 10.0,
+                    params.steps.1 * ycoord as f32 - params.physical_len.1 / 2.0,
                 ),
                 start: na::Vector3::new(
-                    step * xcoord as f32 - 10.0,
+                    params.steps.0 * xcoord as f32 - params.physical_len.0 / 2.0,
                     0.0,
-                    step * ycoord as f32 - 10.0,
+                    params.steps.1 * ycoord as f32 - params.physical_len.1 / 2.0,
                 ),
                 move_lerp: 0.0,
             },
@@ -94,7 +95,8 @@ impl Bunny {
             Ok(())
         });
 
-        // grid.remove_vertex(&(xcoord as usize, ycoord as usize));
+        grid.remove_vertex(&(xcoord as usize, ycoord as usize));
+        res.insert(grid);
 
         entity
     }
@@ -109,27 +111,28 @@ impl Stone {
             &"0cf76cc1-93f1-47d0-8687-45868725c4fa".parse().unwrap(),
             // &"1c9762a5-26ff-40b9-a47e-b9c5621a771a".parse().unwrap(),
         );
-        let mut grid = cx.res.get_mut::<pathfinding::grid::Grid>().unwrap();
+
+        let res = cx.res;
+        let mut grid = res.get::<pathfinding::grid::Grid>().unwrap().clone();
+        let params = res.get::<MapParams>().unwrap();
 
         let mut rng = rand::thread_rng();
 
-        let mut xcoord = rng.gen_range(0..32);
-        let mut ycoord = rng.gen_range(0..32);
+        let mut xcoord = rng.gen_range(0..params.tiles_dimension.0);
+        let mut ycoord = rng.gen_range(0..params.tiles_dimension.1);
 
         while (!grid.has_vertex(&(xcoord as usize, ycoord as usize))) {
-            xcoord = rng.gen_range(0..32);
-            ycoord = rng.gen_range(0..32);
+            xcoord = rng.gen_range(0..params.tiles_dimension.0);
+            ycoord = rng.gen_range(0..params.tiles_dimension.1);
         }
-
-        let step = 20.0 / 32.0;
 
         let entity = cx.world.spawn((
             self,
             Global3::new(
                 na::Translation3::new(
-                    step * xcoord as f32 - 10.0,
+                    params.steps.0 * xcoord as f32 - params.physical_len.0 / 2.0,
                     0.075,
-                    step * ycoord as f32 - 10.0,
+                    params.steps.1 * ycoord as f32 - params.physical_len.1 / 2.0,
                 )
                 .into(),
             ),
@@ -143,6 +146,8 @@ impl Stone {
         ));
 
         grid.remove_vertex(&(xcoord as usize, ycoord as usize));
+
+        res.insert(grid);
 
         cx.spawner.spawn(async move {
             let mut handle = handle.await;
@@ -165,6 +170,15 @@ impl Stone {
 #[derive(Default)]
 struct BunnyCount {
     count: u32,
+}
+
+#[derive(Clone, Debug)]
+struct MapParams {
+    tiles_dimension: (i32, i32),
+    physical_min: (f32, f32),
+    physical_max: (f32, f32),
+    physical_len: (f32, f32),
+    steps: (f32, f32),
 }
 
 fn main() {
@@ -201,11 +215,32 @@ fn main() {
 
         game.control.add_global_controller(controller1);
 
-        let mut grid = pathfinding::grid::Grid::new(32, 32);
+        let mut grid = pathfinding::grid::Grid::new(48, 48);
         grid.enable_diagonal_mode();
         grid.fill();
 
         game.res.insert(grid);
+
+        let mut params = MapParams {
+            tiles_dimension: (48, 48),
+            physical_min: (-15.0, -15.0),
+            physical_max: (15.0, 15.0),
+            physical_len: (0.0, 0.0),
+            steps: (0.0, 0.0),
+        };
+
+        let physical_len = (
+            params.physical_max.0 - params.physical_min.0,
+            params.physical_max.1 - params.physical_min.1,
+        );
+
+        let steps = (
+            physical_len.0 / params.tiles_dimension.0 as f32,
+            physical_len.1 / params.tiles_dimension.1 as f32,
+        );
+
+        params.physical_len = physical_len;
+        params.steps = steps;
 
         let mut handle = game
             .loader
@@ -214,23 +249,28 @@ fn main() {
             )
             .await;
         let object = handle.get(&mut game.graphics)?;
-        let step = 20.0 / 32.0;
-        for i in 0..32 {
-            for j in 0..32 {
+        // let step = (params.physical_max.0 - params.physical_min.0) / params.tiles_dimension.0;
+        for i in 0..params.tiles_dimension.0 {
+            for j in 0..params.tiles_dimension.1 {
                 game.world.spawn((
                     object.primitives[0].mesh.clone(),
                     Global3::new(
-                        na::Translation3::new(step * i as f32 - 10.0, 0.0, step * j as f32 - 10.0)
-                            .into(),
+                        na::Translation3::new(
+                            steps.0 * i as f32 - physical_len.0 / 2.0,
+                            0.0,
+                            steps.1 * j as f32 - physical_len.1 / 2.0,
+                        )
+                        .into(),
                     ),
                     arcana::graphics::Scale(na::Vector3::new(0.25, 0.25, 0.25)),
                 ));
             }
         }
+        game.res.insert(params);
 
-        let start = 64;
+        let start = 256;
 
-        for _ in 0..128 {
+        for _ in 0..256 {
             let stome = Stone.spawn(game.cx());
         }
 

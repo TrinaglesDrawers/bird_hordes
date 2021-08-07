@@ -4,6 +4,7 @@ use {arcana::*, rapier3d::na};
 
 use crate::Bunny;
 use crate::BunnyCount;
+use crate::MapParams;
 use pathfinding::prelude::{absdiff, astar};
 
 #[derive(Clone, Debug)]
@@ -57,7 +58,7 @@ impl System for BunnyMoveSystem {
             let mut v = &mut global.iso.translation.vector;
             let delta = cx.clock.delta.as_secs_f32();
 
-            let step = 20.0 / 32.0;
+            let params = cx.res.get::<MapParams>().unwrap();
 
             movement.move_lerp += delta * movement.speed;
 
@@ -94,7 +95,7 @@ impl System for BunnyMoveSystem {
             // ) <= 0.0000001
             // {
             if movement.move_lerp >= 1.0 {
-                let mut grid = cx.res.get_mut::<pathfinding::grid::Grid>().unwrap();
+                let mut grid = cx.res.get::<pathfinding::grid::Grid>().unwrap().clone();
 
                 movement.start = na::Vector3::new(v.x, v.y, v.z);
                 movement.move_lerp = 0.0;
@@ -104,9 +105,9 @@ impl System for BunnyMoveSystem {
 
                     if (grid.has_vertex(&(next_coord.0 as usize, next_coord.1 as usize))) {
                         movement.destination = na::Vector3::new(
-                            step * next_coord.0 as f32 - 10.0,
+                            params.steps.0 * next_coord.0 as f32 - params.physical_len.0 / 2.0,
                             0.0,
-                            step * next_coord.1 as f32 - 10.0,
+                            params.steps.1 * next_coord.1 as f32 - params.physical_len.1 / 2.0,
                         );
 
                         grid.add_vertex((coords.xcoord as usize, coords.ycoord as usize));
@@ -124,6 +125,7 @@ impl System for BunnyMoveSystem {
                             coords.hops[coords.hops.len() - 1].1,
                         );
 
+                        grid.add_vertex((coords.xcoord as usize, coords.ycoord as usize));
                         let path = astar(
                             &(coords.xcoord, coords.ycoord),
                             |p| {
@@ -140,22 +142,24 @@ impl System for BunnyMoveSystem {
                             |p| *p == (goal.0, goal.1),
                         )
                         .unwrap_or((Vec::<(i32, i32)>::new(), 0));
+                        grid.remove_vertex(&(coords.xcoord as usize, coords.ycoord as usize));
 
                         coords.hops = path.0;
-                        // if (coords.hops.is_empty()) {
-                        //     println!("Path empty1 :(");
-                        // }
+                        if (coords.hops.is_empty()) {
+                            // println!("Path empty1 :(");
+                        } else {
+                            coords.hops.remove(0);
+                        }
                     }
                 } else {
-                    grid.add_vertex((coords.xcoord as usize, coords.ycoord as usize));
                     let mut rng = rand::thread_rng();
 
-                    let mut xcoord = rng.gen_range(0..32);
-                    let mut ycoord = rng.gen_range(0..32);
+                    let mut xcoord = rng.gen_range(0..params.tiles_dimension.0);
+                    let mut ycoord = rng.gen_range(0..params.tiles_dimension.1);
 
                     while (!grid.has_vertex(&(xcoord as usize, ycoord as usize))) {
-                        xcoord = rng.gen_range(0..32);
-                        ycoord = rng.gen_range(0..32);
+                        xcoord = rng.gen_range(0..params.tiles_dimension.0);
+                        ycoord = rng.gen_range(0..params.tiles_dimension.1);
                     }
 
                     // println!(
@@ -165,6 +169,7 @@ impl System for BunnyMoveSystem {
 
                     let goal = Pos(xcoord, ycoord);
 
+                    grid.add_vertex((coords.xcoord as usize, coords.ycoord as usize));
                     let path = astar(
                         &(coords.xcoord, coords.ycoord),
                         |p| {
@@ -184,13 +189,19 @@ impl System for BunnyMoveSystem {
                     .unwrap_or((Vec::<(i32, i32)>::new(), 0));
 
                     coords.hops = path.0;
-                    // if (coords.hops.is_empty()) {
-                    //     println!("Path empty2 :(");
-                    // }
+
+                    grid.remove_vertex(&(coords.xcoord as usize, coords.ycoord as usize));
+                    if (coords.hops.is_empty()) {
+                        // println!("Path empty2 :(");
+                    } else {
+                        coords.hops.remove(0);
+                    }
                     // for _p in &coords.hops {
                     //     println!("Path: {}, {}", _p.0, _p.1);
                     // }
                 }
+
+                cx.res.insert(grid);
             }
             // println!("Position {}", v);
         }
@@ -206,13 +217,15 @@ impl System for BunnySpawnSystem {
     }
 
     fn run(&mut self, mut cx: SystemContext<'_>) -> eyre::Result<()> {
-        cx.res.with(BunnyCount::default).count += 6;
-        Bunny.spawn(cx.task());
-        Bunny.spawn(cx.task());
-        Bunny.spawn(cx.task());
-        Bunny.spawn(cx.task());
-        Bunny.spawn(cx.task());
-        Bunny.spawn(cx.task());
+        for i in 0..24 {
+            cx.res.with(BunnyCount::default).count += 1;
+            Bunny.spawn(cx.task());
+        }
+        // Bunny.spawn(cx.task());
+        // Bunny.spawn(cx.task());
+        // Bunny.spawn(cx.task());
+        // Bunny.spawn(cx.task());
+        // Bunny.spawn(cx.task());
         Ok(())
     }
 }
