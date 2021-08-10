@@ -4,6 +4,7 @@ use crate::systems::bunny_systems::BunnyGridComponent;
 use crate::systems::bunny_systems::BunnyMoveComponent;
 use crate::systems::bunny_systems::BunnyMovementState;
 use crate::systems::bunny_systems::BunnyTTLComponent;
+use crate::systems::bunny_systems::Pos;
 
 use arcana::camera::FreeCamera3Controller;
 use pathfinding;
@@ -32,12 +33,21 @@ impl Bunny {
 
         let scales = [
             arcana::graphics::Scale(na::Vector3::new(0.5, 1.0, 0.5)),
-            arcana::graphics::Scale(na::Vector3::new(1.5, 1.2, 1.5)),
             arcana::graphics::Scale(na::Vector3::new(0.6, 0.6, 0.6)),
             arcana::graphics::Scale(na::Vector3::new(1.0, 1.0, 1.0)),
             arcana::graphics::Scale(na::Vector3::new(1.1, 2.0, 1.1)),
+            arcana::graphics::Scale(na::Vector3::new(1.5, 1.2, 1.5)),
         ];
         let mut rng = thread_rng();
+
+        let scale_index = rng.gen_range(0..scales.len());
+        let scale = scales[scale_index];
+        let mut size = 1;
+        if scale_index >= 3 {
+            size = 3;
+        } else if scale_index >= 2 {
+            size = 2;
+        }
 
         let variants = [
             (
@@ -58,12 +68,15 @@ impl Bunny {
             ),
         ];
         let variant = rng.gen_range(0..4);
-        let mut xcoord = variants[variant].0;
-        let mut ycoord = variants[variant].1;
+        let mut can_spawn_at_position = false;
 
-        while !grid.has_vertex(&(xcoord as usize, ycoord as usize))
-            || globalTargets.targets.contains(&(xcoord, ycoord))
-        {
+        let (xmin, xmax, ymin, ymax) = Pos::min_max_offset(size);
+        let mut xcoord = 0;
+        let mut ycoord = 0;
+
+        while !can_spawn_at_position || globalTargets.targets.contains(&(xcoord, ycoord)) {
+            // xcoord = rng.gen_range(0..params.tiles_dimension.0);
+            // ycoord = rng.gen_range(0..params.tiles_dimension.1);
             let variants = [
                 (
                     rng.gen_range(0..params.tiles_dimension.0),
@@ -85,9 +98,23 @@ impl Bunny {
             let variant = rng.gen_range(0..4);
             xcoord = variants[variant].0;
             ycoord = variants[variant].1;
+
+            can_spawn_at_position = true;
+            for ix in xmin..xmax + 1 {
+                for iy in ymin..ymax + 1 {
+                    if !grid.has_vertex(&((xcoord + ix) as usize, (ycoord + iy) as usize)) {
+                        can_spawn_at_position = false;
+                        break;
+                    }
+                }
+                if !can_spawn_at_position {
+                    break;
+                }
+            }
         }
 
-        let _speed: i32 = rng.gen_range(1..5);
+        // let _speed: i32 = rng.gen_range(20 - size * 2 as i32);
+        let _speed: i32 = 20 - size as i32 * 2;
         let entity = cx.world.spawn((
             self,
             Global3::new(
@@ -116,10 +143,11 @@ impl Bunny {
             BunnyGridComponent {
                 xcoord: xcoord,
                 ycoord: ycoord,
-                hops: Vec::<(i32, i32)>::new(),
+                hops: Vec::<Pos>::new(),
+                size: 1,
             },
             // object.primitives[0].mesh.clone(),
-            scales[rng.gen_range(0..scales.len())],
+            scale,
         ));
 
         if rng.gen_range(0..3) >= 1 {
@@ -183,36 +211,57 @@ impl Stone {
 
         let mut rng = rand::thread_rng();
 
-        let mut xcoord = rng.gen_range(0..params.tiles_dimension.0);
-        let mut ycoord = rng.gen_range(0..params.tiles_dimension.1);
+        let mut xcoord = 0; // = rng.gen_range(0..params.tiles_dimension.0);
+        let mut ycoord = 0; // = rng.gen_range(0..params.tiles_dimension.1);
 
-        while !grid.has_vertex(&(xcoord as usize, ycoord as usize))
-            || globalTargets.targets.contains(&(xcoord, ycoord))
-        {
+        let mut can_spawn_at_position = false;
+        let (xmin, xmax, ymin, ymax) = Pos::min_max_offset(2);
+
+        while !can_spawn_at_position || globalTargets.targets.contains(&(xcoord, ycoord)) {
             xcoord = rng.gen_range(0..params.tiles_dimension.0);
             ycoord = rng.gen_range(0..params.tiles_dimension.1);
+
+            can_spawn_at_position = true;
+            for ix in xmin..xmax + 1 {
+                for iy in ymin..ymax + 1 {
+                    if !grid.has_vertex(&((xcoord + ix) as usize, (ycoord + iy) as usize)) {
+                        can_spawn_at_position = false;
+                        break;
+                    }
+                }
+                if !can_spawn_at_position {
+                    break;
+                }
+            }
         }
 
         let entity = cx.world.spawn((
             self,
             Global3::new(
                 na::Translation3::new(
-                    params.steps.0 * xcoord as f32 - params.physical_len.0 / 2.0,
+                    (params.steps.0 * xcoord as f32 + params.steps.0 * (xcoord + 1) as f32) / 2.0
+                        - params.physical_len.0 / 2.0,
                     0.075,
-                    params.steps.1 * ycoord as f32 - params.physical_len.1 / 2.0,
+                    (params.steps.1 * ycoord as f32 + params.steps.1 * (ycoord - 1) as f32) / 2.0
+                        - params.physical_len.1 / 2.0,
                 )
                 .into(),
             ),
             BunnyGridComponent {
                 xcoord: xcoord,
                 ycoord: ycoord,
-                hops: Vec::<(i32, i32)>::new(),
+                hops: Vec::<Pos>::new(),
+                size: 2,
             },
             // object.primitives[0].mesh.clone(),
             arcana::graphics::Scale(na::Vector3::new(0.25, 0.25, 0.25)),
         ));
 
-        grid.remove_vertex(&(xcoord as usize, ycoord as usize));
+        for ix in xmin..xmax + 1 {
+            for iy in ymin..ymax + 1 {
+                grid.remove_vertex(&((xcoord + ix) as usize, (ycoord + iy) as usize));
+            }
+        }
 
         res.insert(grid);
 
@@ -287,14 +336,14 @@ fn main() {
 
         game.control.add_global_controller(controller1);
 
-        let mut grid = pathfinding::grid::Grid::new(64, 64);
+        let mut grid = pathfinding::grid::Grid::new(128, 128);
         grid.enable_diagonal_mode();
         grid.fill();
 
         game.res.insert(grid);
 
         let mut params = MapParams {
-            tiles_dimension: (64, 64),
+            tiles_dimension: (128, 128),
             physical_min: (-20.0, -20.0),
             physical_max: (20.0, 20.0),
             physical_len: (0.0, 0.0),
@@ -355,11 +404,11 @@ fn main() {
 
         let mut rng = rand::thread_rng();
 
-        for _ in 0..rng.gen_range(3..targets_max_count + 1) {
+        for _ in 0..rng.gen_range(1..targets_max_count + 1) {
             let mut xcoord =
-                rng.gen_range(params.tiles_dimension.0 / 3..params.tiles_dimension.0 / 3 * 2);
+                rng.gen_range(params.tiles_dimension.0 / 2 - 2..params.tiles_dimension.0 / 2 + 2);
             let mut ycoord =
-                rng.gen_range(params.tiles_dimension.1 / 3..params.tiles_dimension.1 / 3 * 2);
+                rng.gen_range(params.tiles_dimension.1 / 2 - 2..params.tiles_dimension.1 / 2 + 2);
 
             // while (!grid.has_vertex(&(xcoord as usize, ycoord as usize))) {
             //     xcoord = rng.gen_range(0..params.tiles_dimension.0);
@@ -388,7 +437,7 @@ fn main() {
 
         // let start = 1;
 
-        for _ in 0..512 {
+        for _ in 0..256 {
             let stome = Stone.spawn(game.cx());
         }
 

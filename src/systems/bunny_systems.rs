@@ -40,11 +40,213 @@ pub struct BunnyMoveComponent {
 pub struct BunnyGridComponent {
     pub xcoord: i32,
     pub ycoord: i32,
-    pub hops: Vec<(i32, i32)>,
+    pub hops: Vec<Pos>,
+    pub size: usize,
 }
 
 #[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-struct Pos(i32, i32);
+pub struct Pos(i32, i32);
+
+impl Pos {
+    // fn distance(&self, other: &Pos) -> u32 {
+    //   (absdiff(self.0, other.0) + absdiff(self.1, other.1)) as u32
+    // }
+
+    pub fn min_max_offset(size: usize) -> (i32, i32, i32, i32) {
+        let mut xmin = 0;
+        let mut xmax = 0;
+        let mut ymin = 0;
+        let mut ymax = 0;
+        if size % 2 == 0 {
+            xmin = -(size as f32 / 2.0) as i32 - 1;
+            ymax = (size as f32 / 2.0) as i32 + 1;
+        } else {
+            xmin = -(size as f32 / 2.0) as i32;
+            ymax = (size as f32 / 2.0) as i32;
+        }
+
+        xmax = (size as f32 / 2.0) as i32;
+        ymin = -(size as f32 / 2.0) as i32;
+
+        return (xmin, xmax, ymin, ymax);
+    }
+
+    fn successors(
+        &self,
+        grid: &pathfinding::grid::Grid,
+        occupy: usize,
+        diagonal_mode: bool,
+    ) -> Vec<(Pos, u32)> {
+        let &Pos(x, y) = self;
+
+        let mut result: Vec<(Pos, u32)> = Vec::<(Pos, u32)>::new();
+
+        let (xmin, xmax, ymin, ymax) = Pos::min_max_offset(occupy);
+
+        // println!("Offsets: {}, {}; {}, {}", xmin, xmax, ymin, ymax);
+
+        // let x =
+        // let &(x, y) = vertex;
+        // let mut candidates = Vec::with_capacity(8);
+        if x + xmin > 0 {
+            let mut can_move_left = true;
+            for iy in ymin..ymax + 1 {
+                let test_vertex = (x + xmin - 1, y + iy);
+                if !grid.has_vertex(&(test_vertex.0 as usize, test_vertex.1 as usize)) {
+                    can_move_left = false;
+                    break;
+                }
+            }
+            if can_move_left {
+                result.push((Pos(x - 1, y), 2));
+            }
+            if diagonal_mode {
+                if y + ymin > 0 {
+                    let mut can_move_left_down = true;
+                    for iy in ymin - 1..ymax {
+                        let test_vertex = (x + xmin - 1, y + iy);
+                        if !grid.has_vertex(&(test_vertex.0 as usize, test_vertex.1 as usize)) {
+                            can_move_left_down = false;
+                            break;
+                        }
+                    }
+                    if can_move_left_down {
+                        for ix in xmin - 1..xmax {
+                            let test_vertex = (x + ix, y + ymin - 1);
+                            if !grid.has_vertex(&(test_vertex.0 as usize, test_vertex.1 as usize)) {
+                                can_move_left_down = false;
+                                break;
+                            }
+                        }
+                    }
+
+                    if can_move_left_down {
+                        result.push((Pos(x - 1, y - 1), 3));
+                    }
+                }
+                if y + ymax + 1 < grid.height as i32 {
+                    let mut can_move_left_up = true;
+                    for iy in ymin + 1..ymax + 2 {
+                        let test_vertex = (x + xmin - 1, y + iy);
+                        if !grid.has_vertex(&(test_vertex.0 as usize, test_vertex.1 as usize)) {
+                            can_move_left_up = false;
+                            break;
+                        }
+                    }
+                    if can_move_left_up {
+                        for ix in xmin - 1..xmax {
+                            let test_vertex = (x + ix, y + ymax + 1);
+                            if !grid.has_vertex(&(test_vertex.0 as usize, test_vertex.1 as usize)) {
+                                can_move_left_up = false;
+                                break;
+                            }
+                        }
+                    }
+
+                    if can_move_left_up {
+                        result.push((Pos(x - 1, y + 1), 3));
+                    }
+                }
+            }
+        }
+        if x + xmax + 1 < grid.width as i32 {
+            let mut can_move_right = true;
+            for iy in ymin..ymax + 1 {
+                let test_vertex = (x + xmax + 1, y + iy);
+                if !grid.has_vertex(&(test_vertex.0 as usize, test_vertex.1 as usize)) {
+                    can_move_right = false;
+                    break;
+                }
+            }
+            if can_move_right {
+                result.push((Pos(x + 1, y), 2));
+            }
+
+            if diagonal_mode {
+                if y + ymin > 0 {
+                    let mut can_move_right_down = true;
+                    for iy in ymin - 1..ymax {
+                        let test_vertex = (x + xmax + 1, y + iy);
+                        if !grid.has_vertex(&(test_vertex.0 as usize, test_vertex.1 as usize)) {
+                            can_move_right_down = false;
+                            break;
+                        }
+                    }
+                    if can_move_right_down {
+                        for ix in xmin + 1..xmax + 2 {
+                            let test_vertex = (x + ix, y + ymin - 1);
+                            if !grid.has_vertex(&(test_vertex.0 as usize, test_vertex.1 as usize)) {
+                                can_move_right_down = false;
+                                break;
+                            }
+                        }
+                    }
+
+                    if can_move_right_down {
+                        result.push((Pos(x + 1, y - 1), 3));
+                    }
+                }
+                if y + ymax + 1 < grid.height as i32 {
+                    let mut can_move_right_up = true;
+                    for iy in ymin + 1..ymax + 2 {
+                        let test_vertex = (x + xmax + 1, y + iy);
+                        if !grid.has_vertex(&(test_vertex.0 as usize, test_vertex.1 as usize)) {
+                            can_move_right_up = false;
+                            break;
+                        }
+                    }
+                    if can_move_right_up {
+                        for ix in xmin + 1..xmax + 2 {
+                            let test_vertex = (x + ix, y + ymax + 1);
+                            if !grid.has_vertex(&(test_vertex.0 as usize, test_vertex.1 as usize)) {
+                                can_move_right_up = false;
+                                break;
+                            }
+                        }
+                    }
+
+                    if can_move_right_up {
+                        result.push((Pos(x + 1, y + 1), 3));
+                    }
+                }
+            }
+        }
+        if y + ymin > 0 {
+            let mut can_move_down = true;
+            for ix in xmin..xmax + 1 {
+                let test_vertex = (x + ix, y + ymin - 1);
+                if !grid.has_vertex(&(test_vertex.0 as usize, test_vertex.1 as usize)) {
+                    can_move_down = false;
+                    break;
+                }
+            }
+            if can_move_down {
+                result.push((Pos(x, y - 1), 2));
+            }
+        }
+        if y + ymax + 1 < grid.height as i32 {
+            let mut can_move_up = true;
+            for ix in xmin..xmax + 1 {
+                let test_vertex = (x + ix, y + ymax + 1);
+                if !grid.has_vertex(&(test_vertex.0 as usize, test_vertex.1 as usize)) {
+                    can_move_up = false;
+                    break;
+                }
+            }
+            if can_move_up {
+                result.push((Pos(x, y + 1), 2));
+            }
+        }
+        // candidates.retain(|v| self.has_vertex(v));
+        // candidates
+
+        result
+
+        // vec![Pos(x+1,y+2), Pos(x+1,y-2), Pos(x-1,y+2), Pos(x-1,y-2),
+        //      Pos(x+2,y+1), Pos(x+2,y-1), Pos(x-2,y+1), Pos(x-2,y-1)]
+        //      .into_iter().map(|p| (p, 1)).collect()
+    }
+}
 
 #[derive(Debug)]
 pub struct BunnyMoveSystem;
@@ -86,6 +288,8 @@ impl System for BunnyMoveSystem {
             v.y = _v.y;
             v.z = _v.z;
 
+            let (xmin, xmax, ymin, ymax) = Pos::min_max_offset(coords.size);
+
             if movement.move_lerp >= 1.0 {
                 movement.start = na::Vector3::new(v.x, v.y, v.z);
                 movement.move_lerp = 0.0;
@@ -93,14 +297,53 @@ impl System for BunnyMoveSystem {
                     // let next_coord = coords.hops.pop().unwrap();
                     let next_coord = coords.hops.remove(0);
 
-                    if (grid.has_vertex(&(next_coord.0 as usize, next_coord.1 as usize))) {
-                        movement.destination = na::Vector3::new(
-                            params.steps.0 * next_coord.0 as f32 - params.physical_len.0 / 2.0,
-                            0.0,
-                            params.steps.1 * next_coord.1 as f32 - params.physical_len.1 / 2.0,
-                        );
+                    let mut next_hop_reachable = true;
+                    for ix in xmin..xmax + 1 {
+                        for iy in ymin..ymax + 1 {
+                            // grid.add_vertex(((next_coord.0 + ix) as usize, (next_coord.1 + iy) as usize));
+                            if (!grid.has_vertex(&(
+                                (next_coord.0 + ix) as usize,
+                                (next_coord.1 + iy) as usize,
+                            ))) {
+                                next_hop_reachable = false;
+                                break;
+                            }
+                        }
+                        if !next_hop_reachable {
+                            break;
+                        }
+                    }
 
-                        grid.add_vertex((coords.xcoord as usize, coords.ycoord as usize));
+                    if (next_hop_reachable) {
+                        if coords.size % 2 == 0 {
+                            movement.destination = na::Vector3::new(
+                                (params.steps.0 * next_coord.0 as f32
+                                    + params.steps.0 * (next_coord.0 + 1) as f32)
+                                    / 2.0
+                                    - params.physical_len.0 / 2.0,
+                                0.0,
+                                (params.steps.1 * next_coord.1 as f32
+                                    + params.steps.1 * (next_coord.1 - 1) as f32)
+                                    / 2.0
+                                    - params.physical_len.1 / 2.0,
+                            );
+                        } else {
+                            movement.destination = na::Vector3::new(
+                                params.steps.0 * next_coord.0 as f32 - params.physical_len.0 / 2.0,
+                                0.0,
+                                params.steps.1 * next_coord.1 as f32 - params.physical_len.1 / 2.0,
+                            );
+                        }
+
+                        for ix in xmin..xmax + 1 {
+                            for iy in ymin..ymax + 1 {
+                                grid.add_vertex((
+                                    (coords.xcoord + ix) as usize,
+                                    (coords.ycoord + iy) as usize,
+                                ));
+                            }
+                        }
+                        // grid.add_vertex((coords.xcoord as usize, coords.ycoord as usize));
 
                         coords.xcoord = next_coord.0;
                         coords.ycoord = next_coord.1;
@@ -109,20 +352,40 @@ impl System for BunnyMoveSystem {
                             .targets
                             .contains(&(coords.xcoord, coords.ycoord))
                         {
-                            grid.remove_vertex(&(next_coord.0 as usize, next_coord.1 as usize));
+                            for ix in xmin..xmax + 1 {
+                                for iy in ymin..ymax + 1 {
+                                    grid.remove_vertex(&(
+                                        (next_coord.0 + ix) as usize,
+                                        (next_coord.1 + iy) as usize,
+                                    ));
+                                }
+                            }
+                            // grid.remove_vertex(&(next_coord.0 as usize, next_coord.1 as usize));
                         }
                     } else {
                         movement.state = BunnyMovementState::Blocked;
                     }
                 } else {
                     movement.state = BunnyMovementState::Idle;
+                }
 
-                    if globalTargets
-                        .targets
-                        .contains(&(coords.xcoord, coords.ycoord))
-                    {
-                        despawn.push((_entity, coords.xcoord, coords.ycoord));
+                let mut target_fetched = false;
+                for ix in xmin..xmax + 1 {
+                    for iy in ymin..ymax + 1 {
+                        if globalTargets
+                            .targets
+                            .contains(&((coords.xcoord + ix) as i32, (coords.ycoord + iy) as i32))
+                        {
+                            target_fetched = true;
+                            break;
+                        }
                     }
+                    if target_fetched {
+                        break;
+                    }
+                }
+                if target_fetched {
+                    despawn.push((_entity, coords.xcoord, coords.ycoord, coords.size));
                 }
             }
             // println!("Position {}", v);
@@ -131,7 +394,13 @@ impl System for BunnyMoveSystem {
         for e in despawn {
             // let mut grid = cx.res.get_mut::<pathfinding::grid::Grid>().unwrap();
 
-            grid.add_vertex((e.1 as usize, e.2 as usize));
+            let (xmin, xmax, ymin, ymax) = Pos::min_max_offset(e.3);
+            for ix in xmin..xmax + 1 {
+                for iy in ymin..ymax + 1 {
+                    grid.add_vertex(((e.1 + ix) as usize, (e.2 + iy) as usize));
+                }
+            }
+            // grid.add_vertex((e.1 as usize, e.2 as usize));
 
             let _ = cx.world.despawn(e.0);
             cx.res.with(BunnyCount::default).count -= 1;
@@ -166,6 +435,8 @@ impl System for BunnyTargetingSystem {
                 continue;
             }
 
+            let (xmin, xmax, ymin, ymax) = Pos::min_max_offset(coords.size);
+
             let params = cx.res.get::<MapParams>().unwrap();
             let globalTargets = cx.res.get::<GlobalTargets>().unwrap();
 
@@ -179,40 +450,75 @@ impl System for BunnyTargetingSystem {
                     coords.hops[coords.hops.len() - 1].1,
                 );
 
-                grid.add_vertex((coords.xcoord as usize, coords.ycoord as usize));
+                // grid.add_vertex((coords.xcoord as usize, coords.ycoord as usize));
+                let neighbours_exists = false;
+                for ix in xmin..xmax + 1 {
+                    for iy in ymin..ymax + 1 {
+                        grid.add_vertex((
+                            (coords.xcoord + ix) as usize,
+                            (coords.ycoord + iy) as usize,
+                        ));
+                    }
+                }
 
                 if grid
                     .neighbours(&(coords.xcoord as usize, coords.ycoord as usize))
                     .len()
                     == 0
                 {
-                    // println!("OOOps");
-                    grid.remove_vertex(&(coords.xcoord as usize, coords.ycoord as usize));
+                    println!("OOOps grid size: {}", grid.vertices_len());
+                    // grid.remove_vertex(&(coords.xcoord as usize, coords.ycoord as usize));
+                    for ix in xmin..xmax + 1 {
+                        for iy in ymin..ymax + 1 {
+                            grid.remove_vertex(&(
+                                (coords.xcoord + ix) as usize,
+                                (coords.ycoord + iy) as usize,
+                            ));
+                        }
+                    }
                     // movement.state = BunnyMovementState::Idle;
                     continue;
                 } else if grid.neighbours(&(goal.0 as usize, goal.1 as usize)).len() == 0 {
-                    // println!("Double OOOps!");
-                    grid.remove_vertex(&(coords.xcoord as usize, coords.ycoord as usize));
+                    println!("Double OOOps! grid size: {}", grid.vertices_len());
+                    // grid.remove_vertex(&(coords.xcoord as usize, coords.ycoord as usize));
+                    for ix in xmin..xmax + 1 {
+                        for iy in ymin..ymax + 1 {
+                            grid.remove_vertex(&(
+                                (coords.xcoord + ix) as usize,
+                                (coords.ycoord + iy) as usize,
+                            ));
+                        }
+                    }
                     continue;
                 }
 
                 let path = astar(
-                    &(coords.xcoord, coords.ycoord),
-                    |p| {
-                        grid.neighbours(&(p.0 as usize, p.1 as usize))
-                            .into_iter()
-                            .map(|p| ((p.0 as i32, p.1 as i32), 1))
-                    },
+                    &Pos(coords.xcoord, coords.ycoord),
+                    |p| p.successors(&grid, coords.size, true),
+                    // |p| {
+                    //     grid.neighbours(&(p.0 as usize, p.1 as usize))
+                    //         .into_iter()
+                    //         .map(|p| ((p.0 as i32, p.1 as i32), 1))
+                    // },
                     |p| {
                         grid.distance(
                             &(p.0 as usize, p.1 as usize),
                             &(goal.0 as usize, goal.1 as usize),
-                        )
+                        ) as u32
                     },
-                    |p| *p == (goal.0, goal.1),
+                    |p| *p == Pos(goal.0, goal.1),
                 )
-                .unwrap_or((Vec::<(i32, i32)>::new(), 0));
-                grid.remove_vertex(&(coords.xcoord as usize, coords.ycoord as usize));
+                .unwrap_or((Vec::<Pos>::new(), 0));
+                // grid.remove_vertex(&(coords.xcoord as usize, coords.ycoord as usize));
+
+                for ix in xmin..xmax + 1 {
+                    for iy in ymin..ymax + 1 {
+                        grid.remove_vertex(&(
+                            (coords.xcoord + ix) as usize,
+                            (coords.ycoord + iy) as usize,
+                        ));
+                    }
+                }
 
                 coords.hops = path.0;
                 if (coords.hops.is_empty()) {
@@ -236,7 +542,12 @@ impl System for BunnyTargetingSystem {
                                 &(_target.0 as usize, _target.1 as usize),
                             );
 
-                            if target_distance < max_distance {
+                            if target_distance < max_distance
+                                && grid
+                                    .neighbours(&(_target.0 as usize, _target.1 as usize))
+                                    .len()
+                                    > 0
+                            {
                                 max_distance = target_distance;
                                 chosen_target = _target.clone();
                             }
@@ -280,28 +591,45 @@ impl System for BunnyTargetingSystem {
 
                 let goal = Pos(xcoord, ycoord);
 
-                grid.add_vertex((coords.xcoord as usize, coords.ycoord as usize));
+                // grid.add_vertex((coords.xcoord as usize, coords.ycoord as usize));
+                for ix in xmin..xmax + 1 {
+                    for iy in ymin..ymax + 1 {
+                        grid.add_vertex((
+                            (coords.xcoord + ix) as usize,
+                            (coords.ycoord + iy) as usize,
+                        ));
+                    }
+                }
                 let path = astar(
-                    &(coords.xcoord, coords.ycoord),
-                    |p| {
-                        grid.neighbours(&(p.0 as usize, p.1 as usize))
-                            .into_iter()
-                            .map(|p| ((p.0 as i32, p.1 as i32), 0))
-                    },
+                    &Pos(coords.xcoord, coords.ycoord),
+                    |p| p.successors(&grid, coords.size, true),
+                    // |p| {
+                    //     grid.neighbours(&(p.0 as usize, p.1 as usize))
+                    //         .into_iter()
+                    //         .map(|p| ((p.0 as i32, p.1 as i32), 0))
+                    // },
                     |p| {
                         grid.distance(
                             &(p.0 as usize, p.1 as usize),
                             &(goal.0 as usize, goal.1 as usize),
-                        )
+                        ) as u32
                     },
-                    |p| *p == (goal.0, goal.1),
+                    |p| *p == Pos(goal.0, goal.1),
                 )
                 // .unwrap();
-                .unwrap_or((Vec::<(i32, i32)>::new(), 0));
+                .unwrap_or((Vec::<Pos>::new(), 0));
 
                 coords.hops = path.0;
 
-                grid.remove_vertex(&(coords.xcoord as usize, coords.ycoord as usize));
+                // grid.remove_vertex(&(coords.xcoord as usize, coords.ycoord as usize));
+                for ix in xmin..xmax + 1 {
+                    for iy in ymin..ymax + 1 {
+                        grid.remove_vertex(&(
+                            (coords.xcoord + ix) as usize,
+                            (coords.ycoord + iy) as usize,
+                        ));
+                    }
+                }
                 if (coords.hops.is_empty()) {
                     // println!("Path empty2 :(");
                 } else {
@@ -324,9 +652,9 @@ impl System for BunnySpawnSystem {
     }
 
     fn run(&mut self, mut cx: SystemContext<'_>) -> eyre::Result<()> {
-        let max_bunny = 512;
-        if cx.res.get::<BunnyCount>().unwrap().count < max_bunny - 54 {
-            for i in 0..54 {
+        let max_bunny = 500;
+        if cx.res.get::<BunnyCount>().unwrap().count < max_bunny - 25 {
+            for i in 0..25 {
                 cx.res.with(BunnyCount::default).count += 1;
                 Bunny.spawn(cx.task());
             }
@@ -361,14 +689,20 @@ impl System for BunnyTTLSystem {
             ttl.lived += delta;
 
             if ttl.lived >= ttl.ttl {
-                despawn.push((_entity, coords.xcoord, coords.ycoord));
+                despawn.push((_entity, coords.xcoord, coords.ycoord, coords.size));
             }
         }
 
         for e in despawn {
             let mut grid = cx.res.get_mut::<pathfinding::grid::Grid>().unwrap();
 
-            grid.add_vertex((e.1 as usize, e.2 as usize));
+            // grid.add_vertex((e.1 as usize, e.2 as usize));
+            let (xmin, xmax, ymin, ymax) = Pos::min_max_offset(e.3);
+            for ix in xmin..xmax + 1 {
+                for iy in ymin..ymax + 1 {
+                    grid.add_vertex(((e.1 + ix) as usize, (e.2 + iy) as usize));
+                }
+            }
 
             let _ = cx.world.despawn(e.0);
             cx.res.with(BunnyCount::default).count -= 1;
