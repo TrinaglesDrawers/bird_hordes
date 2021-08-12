@@ -1,3 +1,6 @@
+use crate::systems::bunny_camera::BunnyCamera;
+use crate::systems::bunny_camera::BunnyCamera3Controller;
+use crate::systems::bunny_camera::BunnyCameraSystem;
 use crate::systems::bunny_systems::BunnyBehaviourComponent;
 use crate::systems::bunny_systems::BunnyBehaviourState;
 use crate::systems::bunny_systems::BunnyGridComponent;
@@ -5,13 +8,15 @@ use crate::systems::bunny_systems::BunnyMoveComponent;
 use crate::systems::bunny_systems::BunnyMovementState;
 use crate::systems::bunny_systems::BunnyTTLComponent;
 use crate::systems::bunny_systems::Pos;
+use rapier3d::prelude::ColliderBuilder;
+use rapier3d::prelude::ColliderSet;
 
-use arcana::camera::FreeCamera3Controller;
 use pathfinding;
 use rand::{thread_rng, Rng};
 use {arcana::*, rapier3d::na};
 
 mod systems {
+    pub mod bunny_camera;
     pub mod bunny_systems;
 }
 
@@ -28,7 +33,7 @@ impl Bunny {
         let mut res = cx.res;
 
         let params = res.get::<MapParams>().unwrap();
-        let globalTargets = res.get::<GlobalTargets>().unwrap();
+        let global_targets = res.get::<GlobalTargets>().unwrap();
         let mut grid = res.get::<pathfinding::grid::Grid>().unwrap().clone();
 
         let scales = [
@@ -49,32 +54,32 @@ impl Bunny {
             size = 2;
         }
 
-        let variants = [
-            (
-                rng.gen_range(0..params.tiles_dimension.0),
-                rng.gen_range(0..2),
-            ),
-            (
-                rng.gen_range(0..params.tiles_dimension.0),
-                rng.gen_range(params.tiles_dimension.1 - 2..params.tiles_dimension.1),
-            ),
-            (
-                rng.gen_range(0..2),
-                rng.gen_range(0..params.tiles_dimension.1),
-            ),
-            (
-                rng.gen_range(params.tiles_dimension.0 - 2..params.tiles_dimension.0),
-                rng.gen_range(0..params.tiles_dimension.1),
-            ),
-        ];
-        let variant = rng.gen_range(0..4);
+        // let variants = [
+        //     (
+        //         rng.gen_range(0..params.tiles_dimension.0),
+        //         rng.gen_range(0..2),
+        //     ),
+        //     (
+        //         rng.gen_range(0..params.tiles_dimension.0),
+        //         rng.gen_range(params.tiles_dimension.1 - 2..params.tiles_dimension.1),
+        //     ),
+        //     (
+        //         rng.gen_range(0..2),
+        //         rng.gen_range(0..params.tiles_dimension.1),
+        //     ),
+        //     (
+        //         rng.gen_range(params.tiles_dimension.0 - 2..params.tiles_dimension.0),
+        //         rng.gen_range(0..params.tiles_dimension.1),
+        //     ),
+        // ];
+        // let variant = rng.gen_range(0..4);
         let mut can_spawn_at_position = false;
 
         let (xmin, xmax, ymin, ymax) = Pos::min_max_offset(size);
         let mut xcoord = 0;
         let mut ycoord = 0;
 
-        while !can_spawn_at_position || globalTargets.targets.contains(&(xcoord, ycoord)) {
+        while !can_spawn_at_position || global_targets.targets.contains(&(xcoord, ycoord)) {
             // xcoord = rng.gen_range(0..params.tiles_dimension.0);
             // ycoord = rng.gen_range(0..params.tiles_dimension.1);
             let variants = [
@@ -207,7 +212,7 @@ impl Stone {
         let res = cx.res;
         let mut grid = res.get::<pathfinding::grid::Grid>().unwrap().clone();
         let params = res.get::<MapParams>().unwrap();
-        let globalTargets = res.get::<GlobalTargets>().unwrap();
+        let global_targets = res.get::<GlobalTargets>().unwrap();
 
         let mut rng = rand::thread_rng();
 
@@ -217,7 +222,7 @@ impl Stone {
         let mut can_spawn_at_position = false;
         let (xmin, xmax, ymin, ymax) = Pos::min_max_offset(2);
 
-        while !can_spawn_at_position || globalTargets.targets.contains(&(xcoord, ycoord)) {
+        while !can_spawn_at_position || global_targets.targets.contains(&(xcoord, ycoord)) {
             xcoord = rng.gen_range(0..params.tiles_dimension.0);
             ycoord = rng.gen_range(0..params.tiles_dimension.1);
 
@@ -311,8 +316,8 @@ fn main() {
         game.scheduler.add_system(camera::FreeCameraSystem);
 
         let controller1 = EntityController::assume_control(
-            FreeCamera3Controller::new(),
-            10,
+            BunnyCamera3Controller::new(),
+            5,
             game.viewport.camera(),
             &mut game.world,
         )?;
@@ -329,7 +334,7 @@ fn main() {
                                 -0.66,
                             ),
                     ),
-                    // camera::FreeCamera::new(10.0),
+                    BunnyCamera::new(5.0),
                 ),
             )
             .unwrap();
@@ -388,7 +393,7 @@ fn main() {
         //     }
         // }
 
-        let mut globalTargets = GlobalTargets {
+        let mut global_targets = GlobalTargets {
             targets: Vec::<(i32, i32)>::new(),
         };
 
@@ -405,9 +410,9 @@ fn main() {
         let mut rng = rand::thread_rng();
 
         for _ in 0..rng.gen_range(1..targets_max_count + 1) {
-            let mut xcoord =
+            let xcoord =
                 rng.gen_range(params.tiles_dimension.0 / 2 - 2..params.tiles_dimension.0 / 2 + 2);
-            let mut ycoord =
+            let ycoord =
                 rng.gen_range(params.tiles_dimension.1 / 2 - 2..params.tiles_dimension.1 / 2 + 2);
 
             // while (!grid.has_vertex(&(xcoord as usize, ycoord as usize))) {
@@ -428,17 +433,17 @@ fn main() {
                 arcana::graphics::Scale(na::Vector3::new(0.25, 0.25, 0.25)),
             ));
 
-            globalTargets.targets.push((xcoord, ycoord));
+            global_targets.targets.push((xcoord, ycoord));
         }
 
-        game.res.insert(globalTargets);
+        game.res.insert(global_targets);
 
         game.res.insert(params);
 
         // let start = 1;
 
         for _ in 0..256 {
-            let stome = Stone.spawn(game.cx());
+            let _stone = Stone.spawn(game.cx());
         }
 
         game.res.with(BunnyCount::default).count = 0;
@@ -460,6 +465,12 @@ fn main() {
         game.scheduler
             .add_fixed_system(systems::bunny_systems::BunnySpawnSystem, TimeSpan::SECOND);
 
+        let mut collider_set = ColliderSet::new();
+
+        /* Create the ground. */
+        let collider = ColliderBuilder::cuboid(100.0, 0.1, 100.0).build();
+        collider_set.insert(collider);
+
         game.scheduler.add_fixed_system(
             |mut cx: SystemContext<'_>| {
                 if let Some(bunny) = cx.res.get::<BunnyCount>() {
@@ -469,7 +480,7 @@ fn main() {
             TimeSpan::SECOND,
         );
 
-        // game.scheduler.add_system(camera::FreeCameraSystem);
+        game.scheduler.add_system(BunnyCameraSystem);
 
         // let mut object = game
         //     .loader

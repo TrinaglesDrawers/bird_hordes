@@ -6,7 +6,7 @@ use crate::Bunny;
 use crate::BunnyCount;
 use crate::GlobalTargets;
 use crate::MapParams;
-use pathfinding::prelude::{absdiff, astar};
+use pathfinding::prelude::astar;
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum BunnyMovementState {
@@ -269,14 +269,14 @@ impl System for BunnyMoveSystem {
             )>()
             .with::<Bunny>()
         {
-            if (movement.state != BunnyMovementState::Moving) {
+            if movement.state != BunnyMovementState::Moving {
                 continue;
             }
-            let mut v = &mut global.iso.translation.vector;
+            let v = &mut global.iso.translation.vector;
             let delta = cx.clock.delta.as_secs_f32();
 
             let params = cx.res.get::<MapParams>().unwrap();
-            let globalTargets = cx.res.get::<GlobalTargets>().unwrap();
+            let global_targets = cx.res.get::<GlobalTargets>().unwrap();
 
             movement.move_lerp += delta * movement.speed;
 
@@ -301,10 +301,10 @@ impl System for BunnyMoveSystem {
                     for ix in xmin..xmax + 1 {
                         for iy in ymin..ymax + 1 {
                             // grid.add_vertex(((next_coord.0 + ix) as usize, (next_coord.1 + iy) as usize));
-                            if (!grid.has_vertex(&(
+                            if !grid.has_vertex(&(
                                 (next_coord.0 + ix) as usize,
                                 (next_coord.1 + iy) as usize,
-                            ))) {
+                            )) {
                                 next_hop_reachable = false;
                                 break;
                             }
@@ -314,7 +314,7 @@ impl System for BunnyMoveSystem {
                         }
                     }
 
-                    if (next_hop_reachable) {
+                    if next_hop_reachable {
                         if coords.size % 2 == 0 {
                             movement.destination = na::Vector3::new(
                                 (params.steps.0 * next_coord.0 as f32
@@ -348,7 +348,7 @@ impl System for BunnyMoveSystem {
                         coords.xcoord = next_coord.0;
                         coords.ycoord = next_coord.1;
 
-                        if !globalTargets
+                        if !global_targets
                             .targets
                             .contains(&(coords.xcoord, coords.ycoord))
                         {
@@ -372,7 +372,7 @@ impl System for BunnyMoveSystem {
                 let mut target_fetched = false;
                 for ix in xmin..xmax + 1 {
                     for iy in ymin..ymax + 1 {
-                        if globalTargets
+                        if global_targets
                             .targets
                             .contains(&((coords.xcoord + ix) as i32, (coords.ycoord + iy) as i32))
                         {
@@ -421,10 +421,9 @@ impl System for BunnyTargetingSystem {
 
     fn run(&mut self, cx: SystemContext<'_>) -> eyre::Result<()> {
         let mut grid = cx.res.get::<pathfinding::grid::Grid>().unwrap().clone();
-        for (_entity, (global, movement, coords, behaviour)) in cx
+        for (_entity, (movement, coords, behaviour)) in cx
             .world
             .query_mut::<(
-                &mut Global3,
                 &mut BunnyMoveComponent,
                 &mut BunnyGridComponent,
                 &BunnyBehaviourComponent,
@@ -438,7 +437,7 @@ impl System for BunnyTargetingSystem {
             let (xmin, xmax, ymin, ymax) = Pos::min_max_offset(coords.size);
 
             let params = cx.res.get::<MapParams>().unwrap();
-            let globalTargets = cx.res.get::<GlobalTargets>().unwrap();
+            let global_targets = cx.res.get::<GlobalTargets>().unwrap();
 
             if movement.state == BunnyMovementState::Blocked {
                 if coords.hops.is_empty() {
@@ -451,7 +450,7 @@ impl System for BunnyTargetingSystem {
                 );
 
                 // grid.add_vertex((coords.xcoord as usize, coords.ycoord as usize));
-                let neighbours_exists = false;
+                let _neighbours_exists = false;
                 for ix in xmin..xmax + 1 {
                     for iy in ymin..ymax + 1 {
                         grid.add_vertex((
@@ -521,7 +520,7 @@ impl System for BunnyTargetingSystem {
                 }
 
                 coords.hops = path.0;
-                if (coords.hops.is_empty()) {
+                if coords.hops.is_empty() {
                     // println!("Path empty1 :(");
                 } else {
                     coords.hops.remove(0);
@@ -532,11 +531,11 @@ impl System for BunnyTargetingSystem {
                 let mut ycoord: i32 = 0;
 
                 if behaviour.state == BunnyBehaviourState::TargetLock {
-                    if globalTargets.targets.len() > 0 {
-                        let mut chosen_target = globalTargets.targets[0];
+                    if global_targets.targets.len() > 0 {
+                        let mut chosen_target = global_targets.targets[0];
                         let mut max_distance = 9999.0 as usize;
 
-                        for _target in &globalTargets.targets {
+                        for _target in &global_targets.targets {
                             let target_distance = grid.distance(
                                 &(coords.xcoord as usize, coords.ycoord as usize),
                                 &(_target.0 as usize, _target.1 as usize),
@@ -568,7 +567,7 @@ impl System for BunnyTargetingSystem {
                     let max_tries = 3;
 
                     let mut try_count = 0;
-                    while (!grid.has_vertex(&(xcoord as usize, ycoord as usize))) {
+                    while !grid.has_vertex(&(xcoord as usize, ycoord as usize)) {
                         if try_count >= max_tries {
                             xcoord = coords.xcoord;
                             ycoord = coords.ycoord;
@@ -630,7 +629,7 @@ impl System for BunnyTargetingSystem {
                         ));
                     }
                 }
-                if (coords.hops.is_empty()) {
+                if coords.hops.is_empty() {
                     // println!("Path empty2 :(");
                 } else {
                     coords.hops.remove(0);
@@ -654,7 +653,7 @@ impl System for BunnySpawnSystem {
     fn run(&mut self, mut cx: SystemContext<'_>) -> eyre::Result<()> {
         let max_bunny = 500;
         if cx.res.get::<BunnyCount>().unwrap().count < max_bunny - 25 {
-            for i in 0..25 {
+            for _ in 0..25 {
                 cx.res.with(BunnyCount::default).count += 1;
                 Bunny.spawn(cx.task());
             }
