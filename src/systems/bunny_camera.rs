@@ -8,11 +8,15 @@ use {arcana::*, rapier3d::na};
 pub enum BunnyCamera3Command {
     // RotateTo(na::UnitQuaternion<f32>),
     Move(na::Vector3<f32>),
+    MouseClicked(bool),
+    MouseReposition(na::Vector2<f32>),
 }
 
 pub struct BunnyCamera3Controller {
     // pitch: f32,
     // yaw: f32,
+    x: f32,
+    y: f32,
     forward_pressed: bool,
     backward_pressed: bool,
     left_pressed: bool,
@@ -26,6 +30,8 @@ impl BunnyCamera3Controller {
         BunnyCamera3Controller {
             // pitch: 0.0,
             // yaw: 0.0,
+            x: 0.0,
+            y: 0.0,
             forward_pressed: false,
             backward_pressed: false,
             left_pressed: false,
@@ -41,28 +47,22 @@ impl InputCommander for BunnyCamera3Controller {
 
     fn translate(&mut self, event: DeviceEvent) -> Option<BunnyCamera3Command> {
         match event {
-            // DeviceEvent::MouseMotion { delta: (x, y) } => {
-            //     self.pitch -= (x * 0.001) as f32;
-            //     self.yaw -= (y * 0.001) as f32;
+            DeviceEvent::MouseMotion { delta: (x, y) } => {
+                self.x += x as f32;
+                self.y += y as f32;
 
-            //     self.yaw = self.yaw.clamp(
-            //         std::f32::consts::FRAC_PI_2 * (f32::EPSILON - 1.0),
-            //         std::f32::consts::FRAC_PI_2 * (1.0 - f32::EPSILON),
-            //     );
+                Some(BunnyCamera3Command::MouseReposition(na::Vector2::new(
+                    self.x, self.y,
+                )))
+            }
+            DeviceEvent::Button {
+                button: button_id,
+                state: element_state,
+            } => {
+                println!("Button {} {}", button_id, element_state as i32);
 
-            //     while self.pitch < -std::f32::consts::PI {
-            //         self.pitch += std::f32::consts::TAU
-            //     }
-
-            //     while self.pitch > std::f32::consts::PI {
-            //         self.pitch -= std::f32::consts::TAU
-            //     }
-
-            //     Some(FreeCamera3Command::RotateTo(
-            //         na::UnitQuaternion::from_euler_angles(0.0, self.pitch, 0.0)
-            //             * na::UnitQuaternion::from_euler_angles(self.yaw, 0.0, 0.0),
-            //     ))
-            // }
+                Some(BunnyCamera3Command::MouseClicked(true))
+            }
             DeviceEvent::Key(KeyboardInput {
                 virtual_keycode: Some(key),
                 state,
@@ -126,12 +126,13 @@ impl System for BunnyCameraSystem {
         for (_, (global, camera, commands)) in query {
             for cmd in commands.drain() {
                 match cmd {
-                    // FreeCamera3Command::RotateTo(rot) => {
-                    //     global.iso.rotation = rot;
-                    // }
+                    BunnyCamera3Command::MouseReposition(pos) => {
+                        println!("New mouse position: {};{}", pos.x, pos.y);
+                    }
                     BunnyCamera3Command::Move(mov) => {
                         camera.mov = mov * camera.speed;
                     }
+                    BunnyCamera3Command::MouseClicked(_) => {}
                 }
             }
 

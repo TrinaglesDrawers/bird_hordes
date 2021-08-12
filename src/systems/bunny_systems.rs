@@ -272,7 +272,8 @@ impl System for BunnyMoveSystem {
             if movement.state != BunnyMovementState::Moving {
                 continue;
             }
-            let v = &mut global.iso.translation.vector;
+            // let v = &mut global.iso.translation.vector;
+
             let delta = cx.clock.delta.as_secs_f32();
 
             let params = cx.res.get::<MapParams>().unwrap();
@@ -284,14 +285,40 @@ impl System for BunnyMoveSystem {
                 .start
                 .lerp(&movement.destination, movement.move_lerp);
 
-            v.x = _v.x;
-            v.y = _v.y;
-            v.z = _v.z;
+            // v.x = _v.x;
+            // v.y = _v.y;
+            // v.z = _v.z;
+
+            let eye = na::Point3::new(
+                global.iso.translation.vector.x,
+                global.iso.translation.vector.y,
+                global.iso.translation.vector.z,
+            );
+            let target = na::Point3::new(
+                movement.destination.x,
+                movement.destination.y,
+                movement.destination.z,
+            );
+            let up = na::Vector3::y();
+
+            // Isometry with its rotation part represented as a UnitQuaternion
+            let iso = na::Isometry3::face_towards(&eye, &target, &up);
+
+            // let _r = global.iso.rotation.lerp(&iso.rotation, movement.move_lerp);
+
+            *global = Global3::new(
+                // na::Translation3::new(_v.x, _v.y, _v.z) * na::UnitQuaternion::from_quaternion(_r),
+                na::Translation3::new(_v.x, _v.y, _v.z) * iso.rotation,
+            );
 
             let (xmin, xmax, ymin, ymax) = Pos::min_max_offset(coords.size);
 
             if movement.move_lerp >= 1.0 {
-                movement.start = na::Vector3::new(v.x, v.y, v.z);
+                movement.start = na::Vector3::new(
+                    global.iso.translation.vector.x,
+                    global.iso.translation.vector.y,
+                    global.iso.translation.vector.z,
+                );
                 movement.move_lerp = 0.0;
                 if !coords.hops.is_empty() {
                     // let next_coord = coords.hops.pop().unwrap();
