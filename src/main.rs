@@ -442,7 +442,7 @@ fn main() {
 
         // let start = 1;
 
-        for _ in 0..256 {
+        for _ in 0..128 {
             let _stone = Stone.spawn(game.cx());
         }
 
@@ -481,6 +481,11 @@ fn main() {
         );
 
         game.scheduler.add_system(BunnyCameraSystem);
+
+        // arcana::game::MainWindow
+        //     .window
+        //     .set_cursor_grab(true)
+        //     .unwrap();
 
         // let mut object = game
         //     .loader

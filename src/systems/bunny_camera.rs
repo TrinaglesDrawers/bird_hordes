@@ -54,6 +54,9 @@ impl InputCommander for BunnyCamera3Controller {
                 Some(BunnyCamera3Command::MouseReposition(na::Vector2::new(
                     self.x, self.y,
                 )))
+                // Some(BunnyCamera3Command::MouseReposition(na::Vector2::new(
+                // x as f32, y as f32,
+                // )))
             }
             DeviceEvent::Button {
                 button: button_id,

@@ -1,5 +1,6 @@
 use arcana::bumpalo::collections::Vec as BVec;
 use rand::Rng;
+use rapier3d::prelude::*;
 use {arcana::*, rapier3d::na};
 
 use crate::Bunny;
@@ -678,9 +679,9 @@ impl System for BunnySpawnSystem {
     }
 
     fn run(&mut self, mut cx: SystemContext<'_>) -> eyre::Result<()> {
-        let max_bunny = 500;
-        if cx.res.get::<BunnyCount>().unwrap().count < max_bunny - 25 {
-            for _ in 0..25 {
+        let max_bunny = 100;
+        if cx.res.get::<BunnyCount>().unwrap().count < max_bunny - 15 {
+            for _ in 0..15 {
                 cx.res.with(BunnyCount::default).count += 1;
                 Bunny.spawn(cx.task());
             }
@@ -734,6 +735,40 @@ impl System for BunnyTTLSystem {
             cx.res.with(BunnyCount::default).count -= 1;
         }
 
+        Ok(())
+    }
+}
+
+struct BunnyCollider(Collider);
+
+impl BunnyCollider {
+    fn new(height: f32, radius: f32) -> Self {
+        BunnyCollider(
+            ColliderBuilder::capsule_y(height, radius)
+                .active_events(ActiveEvents::CONTACT_EVENTS)
+                .build(),
+        )
+    }
+}
+
+#[derive(Debug)]
+pub struct BunnyColliderSystem;
+
+impl System for BunnyColliderSystem {
+    fn name(&self) -> &str {
+        "BunnyColliderSystem"
+    }
+
+    fn run(&mut self, cx: SystemContext<'_>) -> eyre::Result<()> {
+        // let mut despawn = BVec::new_in(cx.bump);
+
+        for (_entity, (collider, global)) in cx
+            .world
+            .query_mut::<(&mut BunnyCollider, &Global3)>()
+            .with::<Bunny>()
+        {
+            collider.position(global.iso);
+        }
         Ok(())
     }
 }
