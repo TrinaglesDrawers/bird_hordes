@@ -304,12 +304,19 @@ impl System for BunnyMoveSystem {
 
             // Isometry with its rotation part represented as a UnitQuaternion
             let iso = na::Isometry3::face_towards(&eye, &target, &up);
+            // let r = na::UnitQuaternion::rotation_between()
 
             // let _r = global.iso.rotation.lerp(&iso.rotation, movement.move_lerp);
 
             *global = Global3::new(
+                na::Isometry3::new(
+                    na::Vector3::new(_v.x, _v.y, _v.z),
+                    // *iso.rotation.axis().unwrap_or(global.iso.rotation.axis().unwrap().clone())
+                    *iso.rotation.axis().unwrap_or(global.iso.rotation.axis().unwrap().clone())
+                    // *iso.rotation.scaled_axis()
+                )
                 // na::Translation3::new(_v.x, _v.y, _v.z) * na::UnitQuaternion::from_quaternion(_r),
-                na::Translation3::new(_v.x, _v.y, _v.z) * iso.rotation,
+                // na::Translation3::new(_v.x, _v.y, _v.z) * iso.rotation,
             );
 
             let (xmin, xmax, ymin, ymax) = Pos::min_max_offset(coords.size);
@@ -739,10 +746,10 @@ impl System for BunnyTTLSystem {
     }
 }
 
-struct BunnyCollider(Collider);
+pub struct BunnyCollider(pub Collider);
 
 impl BunnyCollider {
-    fn new(height: f32, radius: f32) -> Self {
+    pub fn new(height: f32, radius: f32) -> Self {
         BunnyCollider(
             ColliderBuilder::capsule_y(height, radius)
                 .active_events(ActiveEvents::CONTACT_EVENTS)
@@ -761,13 +768,38 @@ impl System for BunnyColliderSystem {
 
     fn run(&mut self, cx: SystemContext<'_>) -> eyre::Result<()> {
         // let mut despawn = BVec::new_in(cx.bump);
+        let physics = cx.res.get_mut::<PhysicsData3>().unwrap();
 
-        for (_entity, (collider, global)) in cx
+        for (_entity, (body_handler, global, contacts)) in cx
             .world
-            .query_mut::<(&mut BunnyCollider, &Global3)>()
+            .query_mut::<(&RigidBodyHandle, &Global3, &mut ContactQueue3)>()
             .with::<Bunny>()
         {
-            collider.position(global.iso);
+            // println!("I am alive. Contacts length: {}", contacts.len());
+            for _other_collider in contacts.drain_contacts_started() {
+                let bits = physics.colliders.get(_other_collider).unwrap().user_data as u64;
+                // let bullet = cx.world.get::<Bullet>(Entity::from_bits(bits)).is_ok();
+
+                // println!("I am alive");
+                println!("Collided {}!", bits);
+                // if bullet {
+                //     tank.alive = false;
+                // }
+            }
+
+            for _other_collider in contacts.drain_contacts_stopped() {
+                let bits = physics.colliders.get(_other_collider).unwrap().user_data as u64;
+                // let bullet = cx.world.get::<Bullet>(Entity::from_bits(bits)).is_ok();
+
+                // println!("I am alive");
+                println!("Uncollided {}!", bits);
+                // if bullet {
+                //     tank.alive = false;
+                // }
+            }
+
+            // let mut collider = physics.colliders.get_mut(*collider_handle).unwrap();
+            // collider.set_translation(global.iso.translation.vector);
         }
         Ok(())
     }

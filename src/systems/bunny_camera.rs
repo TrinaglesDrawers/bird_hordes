@@ -130,7 +130,7 @@ impl System for BunnyCameraSystem {
             for cmd in commands.drain() {
                 match cmd {
                     BunnyCamera3Command::MouseReposition(pos) => {
-                        println!("New mouse position: {};{}", pos.x, pos.y);
+                        // println!("New mouse position: {};{}", pos.x, pos.y);
                     }
                     BunnyCamera3Command::Move(mov) => {
                         camera.mov = mov * camera.speed;

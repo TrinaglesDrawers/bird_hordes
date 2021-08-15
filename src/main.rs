@@ -1,21 +1,17 @@
+use crate::na::Isometry3;
+use crate::na::Vector3;
 use crate::systems::bunny_camera::BunnyCamera;
 use crate::systems::bunny_camera::BunnyCamera3Controller;
 use crate::systems::bunny_camera::BunnyCameraSystem;
-use crate::systems::bunny_systems::BunnyBehaviourComponent;
-use crate::systems::bunny_systems::BunnyBehaviourState;
-use crate::systems::bunny_systems::BunnyGridComponent;
-use crate::systems::bunny_systems::BunnyMoveComponent;
-use crate::systems::bunny_systems::BunnyMovementState;
-use crate::systems::bunny_systems::BunnyTTLComponent;
-use crate::systems::bunny_systems::Pos;
-use rapier3d::prelude::ColliderBuilder;
-use rapier3d::prelude::ColliderSet;
+use crate::systems::bunny_systems::*;
+use rapier3d::prelude::*;
 
 use pathfinding;
 use rand::{thread_rng, Rng};
 use {arcana::*, rapier3d::na};
 
 mod systems {
+    pub mod bunnty_colliders_physics;
     pub mod bunny_camera;
     pub mod bunny_systems;
 }
@@ -118,18 +114,79 @@ impl Bunny {
             }
         }
 
+        // let physics = res.get::<PhysicsData3>().unwrap().clone();
+        let mut physics = res.get::<PhysicsData3>().unwrap();
+        let mut collider_set = physics.colliders.clone();
+        let mut bodies_set = physics.bodies.clone();
+
+        let body = bodies_set.insert(
+            RigidBodyBuilder::new_static()
+                // .position(
+                //     na::Translation3::new(
+                //         params.steps.0 * xcoord as f32 - params.physical_len.0 / 2.0,
+                //         0.0,
+                //         params.steps.1 * ycoord as f32 - params.physical_len.1 / 2.0,
+                //     )
+                //     .into(),
+                // )
+                .additional_mass(size as f32)
+                // .mass(size as f32)
+                .linear_damping(0.3)
+                .angular_damping(0.3)
+                .build(),
+        );
+
+        collider_set.insert_with_parent(
+            ColliderBuilder::capsule_y(scale.0.y, 2.0)
+                // ColliderBuilder::cuboid(scale.0.x, scale.0.y, scale.0.z)
+                // ColliderBuilder::capsule_y(scale.0.y, scale.0.x * 0.5)
+                .active_events(ActiveEvents::all())
+                // .active_events(ActiveEvents::CONTACT_EVENTS)
+                .build(),
+            body,
+            &mut bodies_set,
+        );
+
+        // // let bunny_collider = BunnyCollider::new(scale.0.y, scale.0.x * 2.0);
+        // let bunny_collider_handle = collider_set.insert(
+        //     // ColliderBuilder::capsule_y(scale.0.y, scale.0.x * 2.0)
+        //     ColliderBuilder::capsule_y(2.0, 2.0)
+        //         .position(
+        //             na::Translation3::new(
+        //                 params.steps.0 * xcoord as f32 - params.physical_len.0 / 2.0,
+        //                 0.0,
+        //                 params.steps.1 * ycoord as f32 - params.physical_len.1 / 2.0,
+        //             )
+        //             .into(),
+        //         )
+        //         .density(1.3)
+        //         .friction(0.8)
+        //         // .active_events(ActiveEvents::CONTACT_EVENTS)
+        //         .sensor(true)
+        //         .build(),
+        // );
+
         // let _speed: i32 = rng.gen_range(20 - size * 2 as i32);
         let _speed: i32 = 20 - size as i32 * 2;
         let entity = cx.world.spawn((
             self,
-            Global3::new(
-                na::Translation3::new(
+            Global3::new(Isometry3::new(
+                na::Vector3::new(
                     params.steps.0 * xcoord as f32 - params.physical_len.0 / 2.0,
                     0.0,
                     params.steps.1 * ycoord as f32 - params.physical_len.1 / 2.0,
-                )
-                .into(),
-            ),
+                ), // .into(),
+                Vector3::y() * std::f32::consts::FRAC_1_PI,
+            )),
+            // Global3::new(
+            //     na::Translation3::new(
+            //         params.steps.0 * xcoord as f32 - params.physical_len.0 / 2.0,
+            //         0.0,
+            //         params.steps.1 * ycoord as f32 - params.physical_len.1 / 2.0,
+            //     )
+            //     .into(),
+            //     // Vector3::y() * std::f32::consts::FRAC_PI_2,
+            // ),
             BunnyMoveComponent {
                 speed: 5.0,
                 destination: na::Vector3::new(
@@ -151,25 +208,27 @@ impl Bunny {
                 hops: Vec::<Pos>::new(),
                 size: 1,
             },
+            body,
+            ContactQueue3::new(),
             // object.primitives[0].mesh.clone(),
             scale,
         ));
 
         if rng.gen_range(0..3) >= 1 {
-            cx.world.insert_one(
+            let _ = cx.world.insert_one(
                 entity,
                 BunnyBehaviourComponent {
                     state: BunnyBehaviourState::TargetLock,
                 },
             );
         } else {
-            cx.world.insert_one(
+            let _ = cx.world.insert_one(
                 entity,
                 BunnyBehaviourComponent {
                     state: BunnyBehaviourState::Wandering,
                 },
             );
-            cx.world.insert_one(
+            let _ = cx.world.insert_one(
                 entity,
                 BunnyTTLComponent {
                     ttl: rng.gen_range(4.0..32.0),
@@ -186,13 +245,24 @@ impl Bunny {
 
             let object = handle.get(cx.graphics).expect(" --- ALARMA! --- ");
 
-            cx.world
+            let _ = cx
+                .world
                 .insert_one(entity, object.primitives[0].mesh.clone());
 
             Ok(())
         });
 
+        let new_physics = PhysicsData3 {
+            bodies: bodies_set,
+            colliders: collider_set,
+            // colliders: ColliderSet::new(),
+            islands: physics.islands.clone(),
+            joints: physics.joints.clone(),
+            gravity: physics.gravity,
+        };
+
         grid.remove_vertex(&(xcoord as usize, ycoord as usize));
+        res.insert(new_physics);
         res.insert(grid);
 
         entity
@@ -204,7 +274,7 @@ struct Stone;
 
 impl Stone {
     fn spawn(self, cx: TaskContext<'_>) -> hecs::Entity {
-        let mut handle = cx.loader.load::<assets::object::Object>(
+        let handle = cx.loader.load::<assets::object::Object>(
             &"0cf76cc1-93f1-47d0-8687-45868725c4fa".parse().unwrap(),
             // &"1c9762a5-26ff-40b9-a47e-b9c5621a771a".parse().unwrap(),
         );
@@ -278,7 +348,8 @@ impl Stone {
 
             let object = handle.get(cx.graphics).expect(" --- ALARMA! --- ");
 
-            cx.world
+            let _result = cx
+                .world
                 .insert_one(entity, object.primitives[0].mesh.clone());
 
             Ok(())
@@ -436,6 +507,7 @@ fn main() {
             global_targets.targets.push((xcoord, ycoord));
         }
 
+        game.res.insert(PhysicsData3::new);
         game.res.insert(global_targets);
 
         game.res.insert(params);
@@ -465,22 +537,26 @@ fn main() {
         game.scheduler
             .add_fixed_system(systems::bunny_systems::BunnySpawnSystem, TimeSpan::SECOND);
 
-        let mut collider_set = ColliderSet::new();
+        // let mut collider_set = ColliderSet::new();
 
-        /* Create the ground. */
-        let collider = ColliderBuilder::cuboid(100.0, 0.1, 100.0).build();
-        collider_set.insert(collider);
+        // /* Create the ground. */
+        // let collider = ColliderBuilder::cuboid(100.0, 0.1, 100.0).build();
+        // collider_set.insert(collider);
 
         game.scheduler.add_fixed_system(
-            |mut cx: SystemContext<'_>| {
+            |cx: SystemContext<'_>| {
                 if let Some(bunny) = cx.res.get::<BunnyCount>() {
                     println!("{} bunnies", bunny.count);
                 }
             },
             TimeSpan::SECOND,
         );
+        game.scheduler.add_system(BunnyColliderSystem);
 
         game.scheduler.add_system(BunnyCameraSystem);
+
+        game.scheduler
+            .add_fixed_system(Physics3::new(), TimeSpan::MILLISECOND * 20);
 
         // arcana::game::MainWindow
         //     .window
