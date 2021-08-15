@@ -1,4 +1,6 @@
 use arcana::bumpalo::collections::Vec as BVec;
+use core::cmp::min;
+use float_ord::FloatOrd;
 use rand::Rng;
 use rapier3d::prelude::*;
 use {arcana::*, rapier3d::na};
@@ -273,22 +275,12 @@ impl System for BunnyMoveSystem {
             if movement.state != BunnyMovementState::Moving {
                 continue;
             }
-            // let v = &mut global.iso.translation.vector;
+            let mut _v = global.iso.translation.vector.clone();
 
             let delta = cx.clock.delta.as_secs_f32();
 
             let params = cx.res.get::<MapParams>().unwrap();
             let global_targets = cx.res.get::<GlobalTargets>().unwrap();
-
-            movement.move_lerp += delta * movement.speed;
-
-            let _v = movement
-                .start
-                .lerp(&movement.destination, movement.move_lerp);
-
-            // v.x = _v.x;
-            // v.y = _v.y;
-            // v.z = _v.z;
 
             let eye = na::Point3::new(
                 global.iso.translation.vector.x,
@@ -302,32 +294,34 @@ impl System for BunnyMoveSystem {
             );
             let up = na::Vector3::y();
 
-            // Isometry with its rotation part represented as a UnitQuaternion
-            let iso = na::Isometry3::face_towards(&eye, &target, &up);
-            // let r = na::UnitQuaternion::rotation_between()
+            if eye != target {
+                _v = global.iso.translation.vector
+                    + (target - eye).normalize()
+                        * min(
+                            FloatOrd(delta * movement.speed),
+                            FloatOrd(na::distance(
+                                &na::Point3::from(_v),
+                                &na::Point3::from(target),
+                            )),
+                        )
+                        .0;
 
-            // let _r = global.iso.rotation.lerp(&iso.rotation, movement.move_lerp);
+                let quat = na::UnitQuaternion::face_towards(&(target - eye), &up);
 
-            *global = Global3::new(
-                na::Isometry3::new(
-                    na::Vector3::new(_v.x, _v.y, _v.z),
-                    // *iso.rotation.axis().unwrap_or(global.iso.rotation.axis().unwrap().clone())
-                    *iso.rotation.axis().unwrap_or(global.iso.rotation.axis().unwrap().clone())
-                    // *iso.rotation.scaled_axis()
-                )
-                // na::Translation3::new(_v.x, _v.y, _v.z) * na::UnitQuaternion::from_quaternion(_r),
-                // na::Translation3::new(_v.x, _v.y, _v.z) * iso.rotation,
-            );
+                *global = Global3::new(na::Translation3::new(_v.x, _v.y, _v.z) * quat);
+            }
 
             let (xmin, xmax, ymin, ymax) = Pos::min_max_offset(coords.size);
 
-            if movement.move_lerp >= 1.0 {
-                movement.start = na::Vector3::new(
-                    global.iso.translation.vector.x,
-                    global.iso.translation.vector.y,
-                    global.iso.translation.vector.z,
-                );
-                movement.move_lerp = 0.0;
+            if na::distance(&na::Point3::from(_v), &na::Point3::from(target)) <= 0.001 {
+                // if &na::Point3::from(global.iso.translation.vector) == &na::Point3::from(_v) {
+                // if movement.move_lerp >= 1.0 {
+                // movement.start = na::Vector3::new(
+                //     global.iso.translation.vector.x,
+                //     global.iso.translation.vector.y,
+                //     global.iso.translation.vector.z,
+                // );
+                // movement.move_lerp = 0.0;
                 if !coords.hops.is_empty() {
                     // let next_coord = coords.hops.pop().unwrap();
                     let next_coord = coords.hops.remove(0);
@@ -437,6 +431,7 @@ impl System for BunnyMoveSystem {
             }
             // grid.add_vertex((e.1 as usize, e.2 as usize));
 
+            println!("Entity {} reached destination", e.0.id());
             let _ = cx.world.despawn(e.0);
             cx.res.with(BunnyCount::default).count -= 1;
         }
@@ -686,7 +681,7 @@ impl System for BunnySpawnSystem {
     }
 
     fn run(&mut self, mut cx: SystemContext<'_>) -> eyre::Result<()> {
-        let max_bunny = 100;
+        let max_bunny = 667;
         if cx.res.get::<BunnyCount>().unwrap().count < max_bunny - 15 {
             for _ in 0..15 {
                 cx.res.with(BunnyCount::default).count += 1;
@@ -723,6 +718,7 @@ impl System for BunnyTTLSystem {
             ttl.lived += delta;
 
             if ttl.lived >= ttl.ttl {
+                println!("Entity {} died", _entity.id());
                 despawn.push((_entity, coords.xcoord, coords.ycoord, coords.size));
             }
         }
@@ -781,7 +777,7 @@ impl System for BunnyColliderSystem {
                 // let bullet = cx.world.get::<Bullet>(Entity::from_bits(bits)).is_ok();
 
                 // println!("I am alive");
-                println!("Collided {}!", bits);
+                // println!("Collided {}!", bits);
                 // if bullet {
                 //     tank.alive = false;
                 // }
@@ -792,7 +788,7 @@ impl System for BunnyColliderSystem {
                 // let bullet = cx.world.get::<Bullet>(Entity::from_bits(bits)).is_ok();
 
                 // println!("I am alive");
-                println!("Uncollided {}!", bits);
+                // println!("Uncollided {}!", bits);
                 // if bullet {
                 //     tank.alive = false;
                 // }

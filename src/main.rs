@@ -50,25 +50,6 @@ impl Bunny {
             size = 2;
         }
 
-        // let variants = [
-        //     (
-        //         rng.gen_range(0..params.tiles_dimension.0),
-        //         rng.gen_range(0..2),
-        //     ),
-        //     (
-        //         rng.gen_range(0..params.tiles_dimension.0),
-        //         rng.gen_range(params.tiles_dimension.1 - 2..params.tiles_dimension.1),
-        //     ),
-        //     (
-        //         rng.gen_range(0..2),
-        //         rng.gen_range(0..params.tiles_dimension.1),
-        //     ),
-        //     (
-        //         rng.gen_range(params.tiles_dimension.0 - 2..params.tiles_dimension.0),
-        //         rng.gen_range(0..params.tiles_dimension.1),
-        //     ),
-        // ];
-        // let variant = rng.gen_range(0..4);
         let mut can_spawn_at_position = false;
 
         let (xmin, xmax, ymin, ymax) = Pos::min_max_offset(size);
@@ -76,8 +57,6 @@ impl Bunny {
         let mut ycoord = 0;
 
         while !can_spawn_at_position || global_targets.targets.contains(&(xcoord, ycoord)) {
-            // xcoord = rng.gen_range(0..params.tiles_dimension.0);
-            // ycoord = rng.gen_range(0..params.tiles_dimension.1);
             let variants = [
                 (
                     rng.gen_range(0..params.tiles_dimension.0),
@@ -114,13 +93,13 @@ impl Bunny {
             }
         }
 
-        // let physics = res.get::<PhysicsData3>().unwrap().clone();
         let mut physics = res.get::<PhysicsData3>().unwrap();
         let mut collider_set = physics.colliders.clone();
         let mut bodies_set = physics.bodies.clone();
 
         let body = bodies_set.insert(
-            RigidBodyBuilder::new_static()
+            RigidBodyBuilder::new_dynamic()
+                // RigidBodyBuilder::new_kinematic_position_based()
                 // .position(
                 //     na::Translation3::new(
                 //         params.steps.0 * xcoord as f32 - params.physical_len.0 / 2.0,
@@ -137,37 +116,14 @@ impl Bunny {
         );
 
         collider_set.insert_with_parent(
-            ColliderBuilder::capsule_y(scale.0.y, 2.0)
-                // ColliderBuilder::cuboid(scale.0.x, scale.0.y, scale.0.z)
-                // ColliderBuilder::capsule_y(scale.0.y, scale.0.x * 0.5)
+            ColliderBuilder::capsule_y(scale.0.y, (params.steps.0 * size as f32) / 2.0)
                 .active_events(ActiveEvents::all())
-                // .active_events(ActiveEvents::CONTACT_EVENTS)
                 .build(),
             body,
             &mut bodies_set,
         );
 
-        // // let bunny_collider = BunnyCollider::new(scale.0.y, scale.0.x * 2.0);
-        // let bunny_collider_handle = collider_set.insert(
-        //     // ColliderBuilder::capsule_y(scale.0.y, scale.0.x * 2.0)
-        //     ColliderBuilder::capsule_y(2.0, 2.0)
-        //         .position(
-        //             na::Translation3::new(
-        //                 params.steps.0 * xcoord as f32 - params.physical_len.0 / 2.0,
-        //                 0.0,
-        //                 params.steps.1 * ycoord as f32 - params.physical_len.1 / 2.0,
-        //             )
-        //             .into(),
-        //         )
-        //         .density(1.3)
-        //         .friction(0.8)
-        //         // .active_events(ActiveEvents::CONTACT_EVENTS)
-        //         .sensor(true)
-        //         .build(),
-        // );
-
-        // let _speed: i32 = rng.gen_range(20 - size * 2 as i32);
-        let _speed: i32 = 20 - size as i32 * 2;
+        let _speed: f32 = (20.0 - size as f32 * 2.0) / 5.0;
         let entity = cx.world.spawn((
             self,
             Global3::new(Isometry3::new(
@@ -188,7 +144,7 @@ impl Bunny {
             //     // Vector3::y() * std::f32::consts::FRAC_PI_2,
             // ),
             BunnyMoveComponent {
-                speed: 5.0,
+                speed: _speed,
                 destination: na::Vector3::new(
                     params.steps.0 * xcoord as f32 - params.physical_len.0 / 2.0,
                     0.0,
@@ -412,6 +368,9 @@ fn main() {
 
         game.control.add_global_controller(controller1);
 
+        game.scheduler
+            .add_fixed_system(Physics3::new(), TimeSpan::MILLISECOND * 20);
+
         let mut grid = pathfinding::grid::Grid::new(128, 128);
         grid.enable_diagonal_mode();
         grid.fill();
@@ -507,7 +466,7 @@ fn main() {
             global_targets.targets.push((xcoord, ycoord));
         }
 
-        game.res.insert(PhysicsData3::new);
+        game.res.insert(PhysicsData3::new());
         game.res.insert(global_targets);
 
         game.res.insert(params);
@@ -554,9 +513,6 @@ fn main() {
         game.scheduler.add_system(BunnyColliderSystem);
 
         game.scheduler.add_system(BunnyCameraSystem);
-
-        game.scheduler
-            .add_fixed_system(Physics3::new(), TimeSpan::MILLISECOND * 20);
 
         // arcana::game::MainWindow
         //     .window
