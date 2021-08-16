@@ -4,6 +4,10 @@ use crate::systems::bunny_camera::BunnyCamera;
 use crate::systems::bunny_camera::BunnyCamera3Controller;
 use crate::systems::bunny_camera::BunnyCameraSystem;
 use crate::systems::bunny_systems::*;
+use crate::systems::tower_systems::BulletSystem;
+use crate::systems::tower_systems::TowerAttackComponent;
+use crate::systems::tower_systems::TowerAttackSystem;
+use crate::systems::tower_systems::TowerColliderSystem;
 use rapier3d::prelude::*;
 
 use pathfinding;
@@ -14,6 +18,7 @@ mod systems {
     pub mod bunnty_colliders_physics;
     pub mod bunny_camera;
     pub mod bunny_systems;
+    pub mod tower_systems;
 }
 
 #[derive(Clone, Debug)]
@@ -168,6 +173,9 @@ impl Bunny {
             ContactQueue3::new(),
             // object.primitives[0].mesh.clone(),
             scale,
+            BunnyHealthComponent {
+                health: 1.0 + size as f32,
+            },
         ));
 
         if rng.gen_range(0..3) >= 1 {
@@ -315,6 +323,157 @@ impl Stone {
     }
 }
 
+#[derive(Clone, Debug)]
+struct Tower;
+
+impl Tower {
+    fn spawn(self, cx: TaskContext<'_>) -> hecs::Entity {
+        let handle = cx.loader.load::<assets::object::Object>(
+            &"08c18bf6-56ed-4cf0-9618-e51ad2093b07".parse().unwrap(),
+            // &"1c9762a5-26ff-40b9-a47e-b9c5621a771a".parse().unwrap(),
+        );
+
+        let res = cx.res;
+        let mut grid = res.get::<pathfinding::grid::Grid>().unwrap().clone();
+        let params = res.get::<MapParams>().unwrap();
+        let global_targets = res.get::<GlobalTargets>().unwrap();
+
+        let mut rng = rand::thread_rng();
+
+        let mut xcoord = 0; // = rng.gen_range(0..params.tiles_dimension.0);
+        let mut ycoord = 0; // = rng.gen_range(0..params.tiles_dimension.1);
+
+        let mut can_spawn_at_position = false;
+        let (xmin, xmax, ymin, ymax) = Pos::min_max_offset(2);
+
+        while !can_spawn_at_position || global_targets.targets.contains(&(xcoord, ycoord)) {
+            xcoord =
+                rng.gen_range(params.tiles_dimension.0 / 2 - 16..params.tiles_dimension.0 / 2 + 16);
+            ycoord =
+                rng.gen_range(params.tiles_dimension.0 / 2 - 16..params.tiles_dimension.0 / 2 + 16);
+
+            can_spawn_at_position = true;
+            for ix in xmin..xmax + 1 {
+                for iy in ymin..ymax + 1 {
+                    if !grid.has_vertex(&((xcoord + ix) as usize, (ycoord + iy) as usize)) {
+                        can_spawn_at_position = false;
+                        break;
+                    }
+                }
+                if !can_spawn_at_position {
+                    break;
+                }
+            }
+        }
+
+        let mut physics = res.get::<PhysicsData3>().unwrap();
+        let mut collider_set = physics.colliders.clone();
+        // let mut bodies_set = physics.bodies.clone();
+
+        // let body = bodies_set.insert(
+        //     RigidBodyBuilder::new_static()
+        //         // RigidBodyBuilder::new_kinematic_position_based()
+        //         // .position(
+        //         //     na::Translation3::new(
+        //         //         params.steps.0 * xcoord as f32 - params.physical_len.0 / 2.0,
+        //         //         0.0,
+        //         //         params.steps.1 * ycoord as f32 - params.physical_len.1 / 2.0,
+        //         //     )
+        //         //     .into(),
+        //         // )
+        //         // .additional_mass(0.0)
+        //         // .mass(size as f32)
+        //         // .linear_damping(0.3)
+        //         // .angular_damping(0.3)
+        //         .build(),
+        // );
+
+        let mut collider = ColliderBuilder::ball(params.steps.0 * 10.0)
+            .active_events(ActiveEvents::all())
+            .sensor(true)
+            .density(0.0)
+            .translation(na::Vector3::new(
+                (params.steps.0 * xcoord as f32 + params.steps.0 * (xcoord + 1) as f32) / 2.0
+                    - params.physical_len.0 / 2.0,
+                0.075,
+                (params.steps.1 * ycoord as f32 + params.steps.1 * (ycoord - 1) as f32) / 2.0
+                    - params.physical_len.1 / 2.0,
+            ))
+            // .friction(0.0)
+            .build();
+        // collider.set_sensor(true);
+
+        // collider_set.insert_with_parent(collider, body, &mut bodies_set);
+        let collider_handle = collider_set.insert(collider);
+
+        let entity = cx.world.spawn((
+            self,
+            Global3::new(
+                na::Translation3::new(
+                    (params.steps.0 * xcoord as f32 + params.steps.0 * (xcoord + 1) as f32) / 2.0
+                        - params.physical_len.0 / 2.0,
+                    0.075,
+                    (params.steps.1 * ycoord as f32 + params.steps.1 * (ycoord - 1) as f32) / 2.0
+                        - params.physical_len.1 / 2.0,
+                )
+                .into(),
+            ),
+            BunnyGridComponent {
+                xcoord: xcoord,
+                ycoord: ycoord,
+                hops: Vec::<Pos>::new(),
+                size: 2,
+            },
+            // object.primitives[0].mesh.clone(),
+            arcana::graphics::Scale(na::Vector3::new(0.25, 0.25, 0.25)),
+            collider_handle,
+            // body,
+            IntersectionQueue3::new(),
+            TowerAttackComponent {
+                target: None,
+                power: rng.gen_range(1.3..5.0),
+                cooldown: 0.0,
+                full_cooldown: rng.gen_range(0.3..1.0),
+            },
+        ));
+
+        for ix in xmin..xmax + 1 {
+            for iy in ymin..ymax + 1 {
+                grid.remove_vertex(&((xcoord + ix) as usize, (ycoord + iy) as usize));
+            }
+        }
+
+        let new_physics = PhysicsData3 {
+            bodies: physics.bodies.clone(),
+            colliders: collider_set,
+            // colliders: ColliderSet::new(),
+            islands: physics.islands.clone(),
+            joints: physics.joints.clone(),
+            gravity: physics.gravity,
+        };
+
+        res.insert(new_physics);
+        res.insert(grid);
+
+        cx.spawner.spawn(async move {
+            let mut handle = handle.await;
+
+            let mut cx = AsyncTaskContext::new();
+            let cx = cx.get();
+
+            let object = handle.get(cx.graphics).expect(" --- ALARMA! --- ");
+
+            let _result = cx
+                .world
+                .insert_one(entity, object.primitives[0].mesh.clone());
+
+            Ok(())
+        });
+
+        entity
+    }
+}
+
 #[derive(Default)]
 struct BunnyCount {
     count: u32,
@@ -398,31 +557,6 @@ fn main() {
         params.physical_len = physical_len;
         params.steps = steps;
 
-        // let mut handle = game
-        //     .loader
-        //     .load::<assets::object::Object>(
-        //         &"0115fcef-c92c-431a-abc6-d4522c95e15a".parse().unwrap(),
-        //     )
-        //     .await;
-        // let object = handle.get(&mut game.graphics)?;
-        // // let step = (params.physical_max.0 - params.physical_min.0) / params.tiles_dimension.0;
-        // for i in 0..params.tiles_dimension.0 {
-        //     for j in 0..params.tiles_dimension.1 {
-        //         game.world.spawn((
-        //             object.primitives[0].mesh.clone(),
-        //             Global3::new(
-        //                 na::Translation3::new(
-        //                     steps.0 * i as f32 - physical_len.0 / 2.0,
-        //                     0.0,
-        //                     steps.1 * j as f32 - physical_len.1 / 2.0,
-        //                 )
-        //                 .into(),
-        //             ),
-        //             arcana::graphics::Scale(na::Vector3::new(0.25, 0.25, 0.25)),
-        //         ));
-        //     }
-        // }
-
         let mut global_targets = GlobalTargets {
             targets: Vec::<(i32, i32)>::new(),
         };
@@ -441,9 +575,9 @@ fn main() {
 
         for _ in 0..rng.gen_range(1..targets_max_count + 1) {
             let xcoord =
-                rng.gen_range(params.tiles_dimension.0 / 2 - 2..params.tiles_dimension.0 / 2 + 2);
+                rng.gen_range(params.tiles_dimension.0 / 2 - 4..params.tiles_dimension.0 / 2 + 4);
             let ycoord =
-                rng.gen_range(params.tiles_dimension.1 / 2 - 2..params.tiles_dimension.1 / 2 + 2);
+                rng.gen_range(params.tiles_dimension.1 / 2 - 4..params.tiles_dimension.1 / 2 + 4);
 
             // while (!grid.has_vertex(&(xcoord as usize, ycoord as usize))) {
             //     xcoord = rng.gen_range(0..params.tiles_dimension.0);
@@ -475,6 +609,10 @@ fn main() {
 
         for _ in 0..128 {
             let _stone = Stone.spawn(game.cx());
+        }
+
+        for _ in 0..8 {
+            let _tower = Tower.spawn(game.cx());
         }
 
         game.res.with(BunnyCount::default).count = 0;
@@ -514,6 +652,10 @@ fn main() {
 
         game.scheduler.add_system(BunnyCameraSystem);
 
+        game.scheduler.add_system(TowerColliderSystem);
+        game.scheduler.add_system(TowerAttackSystem);
+        game.scheduler.add_system(BunnyHealthSystem);
+        game.scheduler.add_system(BulletSystem);
         // arcana::game::MainWindow
         //     .window
         //     .set_cursor_grab(true)

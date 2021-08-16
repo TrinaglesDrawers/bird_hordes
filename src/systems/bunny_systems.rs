@@ -681,7 +681,7 @@ impl System for BunnySpawnSystem {
     }
 
     fn run(&mut self, mut cx: SystemContext<'_>) -> eyre::Result<()> {
-        let max_bunny = 667;
+        let max_bunny = 75;
         if cx.res.get::<BunnyCount>().unwrap().count < max_bunny - 15 {
             for _ in 0..15 {
                 cx.res.with(BunnyCount::default).count += 1;
@@ -797,6 +797,51 @@ impl System for BunnyColliderSystem {
             // let mut collider = physics.colliders.get_mut(*collider_handle).unwrap();
             // collider.set_translation(global.iso.translation.vector);
         }
+        Ok(())
+    }
+}
+
+pub struct BunnyHealthComponent {
+    pub health: f32,
+}
+
+pub struct BunnyHealthSystem;
+
+impl System for BunnyHealthSystem {
+    fn name(&self) -> &str {
+        "BunnyHealthSystem"
+    }
+
+    fn run(&mut self, cx: SystemContext<'_>) -> eyre::Result<()> {
+        let mut despawn = BVec::new_in(cx.bump);
+
+        for (_entity, (health, coords)) in cx
+            .world
+            .query_mut::<(&BunnyHealthComponent, &BunnyGridComponent)>()
+            .with::<Bunny>()
+        {
+            if health.health <= 0.0 {
+                println!("Entity {} killed", _entity.id());
+                despawn.push((_entity, coords.xcoord, coords.ycoord, coords.size));
+            }
+        }
+
+        for e in despawn {
+            let mut grid = cx.res.get_mut::<pathfinding::grid::Grid>().unwrap();
+
+            // grid.add_vertex((e.1 as usize, e.2 as usize));
+            let (xmin, xmax, ymin, ymax) = Pos::min_max_offset(e.3);
+            for ix in xmin..xmax + 1 {
+                for iy in ymin..ymax + 1 {
+                    grid.add_vertex(((e.1 + ix) as usize, (e.2 + iy) as usize));
+                }
+            }
+            println!("{} was killed in action", e.0.id());
+
+            let _ = cx.world.despawn(e.0);
+            cx.res.with(BunnyCount::default).count -= 1;
+        }
+
         Ok(())
     }
 }

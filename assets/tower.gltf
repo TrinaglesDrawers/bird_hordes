@@ -1,0 +1,129 @@
+{
+    "asset" : {
+        "generator" : "Khronos glTF Blender I/O v1.4.40",
+        "version" : "2.0"
+    },
+    "scene" : 0,
+    "scenes" : [
+        {
+            "name" : "Scene",
+            "nodes" : [
+                0
+            ]
+        }
+    ],
+    "nodes" : [
+        {
+            "mesh" : 0,
+            "name" : "Cone",
+            "translation" : [
+                0,
+                1.4194211959838867,
+                0
+            ]
+        }
+    ],
+    "materials" : [
+        {
+            "doubleSided" : true,
+            "name" : "Material.002",
+            "pbrMetallicRoughness" : {
+                "metallicFactor" : 0,
+                "roughnessFactor" : 0.5
+            }
+        }
+    ],
+    "meshes" : [
+        {
+            "name" : "Cone.001",
+            "primitives" : [
+                {
+                    "attributes" : {
+                        "POSITION" : 0,
+                        "NORMAL" : 1,
+                        "TEXCOORD_0" : 2,
+                        "COLOR_0" : 3
+                    },
+                    "indices" : 4,
+                    "material" : 0
+                }
+            ]
+        }
+    ],
+    "accessors" : [
+        {
+            "bufferView" : 0,
+            "componentType" : 5126,
+            "count" : 20,
+            "max" : [
+                0.9510565400123596,
+                1.399999976158142,
+                0.8090170621871948
+            ],
+            "min" : [
+                -0.9510564804077148,
+                -1.399999976158142,
+                -1
+            ],
+            "type" : "VEC3"
+        },
+        {
+            "bufferView" : 1,
+            "componentType" : 5126,
+            "count" : 20,
+            "type" : "VEC3"
+        },
+        {
+            "bufferView" : 2,
+            "componentType" : 5126,
+            "count" : 20,
+            "type" : "VEC2"
+        },
+        {
+            "bufferView" : 3,
+            "componentType" : 5123,
+            "count" : 20,
+            "normalized" : true,
+            "type" : "VEC4"
+        },
+        {
+            "bufferView" : 4,
+            "componentType" : 5123,
+            "count" : 24,
+            "type" : "SCALAR"
+        }
+    ],
+    "bufferViews" : [
+        {
+            "buffer" : 0,
+            "byteLength" : 240,
+            "byteOffset" : 0
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 240,
+            "byteOffset" : 240
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 160,
+            "byteOffset" : 480
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 160,
+            "byteOffset" : 640
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 48,
+            "byteOffset" : 800
+        }
+    ],
+    "buffers" : [
+        {
+            "byteLength" : 848,
+            "uri" : "data:application/octet-stream;base64,AAAAADMzs78AAIC/AAAAADMzs78AAIC/AAAAADMzs78AAIC/cXhzPzMzs795N56+cXhzPzMzs795N56+cXhzPzMzs795N56+F3kWPzMzs7++G08/F3kWPzMzs7++G08/F3kWPzMzs7++G08/GnkWvzMzs7+8G08/GnkWvzMzs7+8G08/GnkWvzMzs7+8G08/cHhzvzMzs79+N56+cHhzvzMzs79+N56+cHhzvzMzs79+N56+AAAAADMzsz8AAACAAAAAADMzsz8AAACAAAAAADMzsz8AAACAAAAAADMzsz8AAACAAAAAADMzsz8AAACATo8Qv/8ejj4y+Ea/6FZXMwAAgL8AAACAT48QP/8ejj4y+Ea/6FZXMwAAgL8AAACAT48QP/8ejj4y+Ea/FudpP/8ejj7O/5c+WG8VtP8ejj6Y8HU/6FZXMwAAgL8AAACAFudpP/8ejj7O/5c+Fudpv/8ejj7F/5c+WG8VtP8ejj6Y8HU/6FZXMwAAgL8AAACAFudpv/8ejj7F/5c+To8Qv/8ejj4y+Ea/6FZXMwAAgL8AAACAFudpv/8ejj7F/5c+To8Qv/8ejj4y+Ea/WG8VtP8ejj6Y8HU/T48QP/8ejj4y+Ea/FudpP/8ejj7O/5c+AACAPlyPAj8AAEA/XI8CPwAAgD5cjwI/0256P5YDLT+m3fQ+lgMtP6bd9D6WAy0/IDrIPr20cT8QHWQ/vbRxPyA6yD69tHE/fBffPby0cT98F989vLRxP/DiGz+8tHE/oCWyPJUDLT+gJbI8lQMtPy2RBT+VAy0/AACAPgAAQD8AAIA+AABAPwAAgD4AAEA/AACAPgAAQD8AAIA+AABAPxhCi6j/////GEKLqP////8YQouo/////wc9ii3/////Bz2KLf////8HPYot/////5kzeaH/////mTN5of////+ZM3mh/////+KYV7X/////4phXtf/////imFe1/////xBBgDT/////EEGANP////8QQYA0/////zmjpcT/////OaOlxP////85o6XE/////zmjpcT/////OaOlxP////8CABIABAAFABMACAAGABEACgAOAAEAAwADAAcACwADAAsADgAJAA8ADAANABAAAAA="
+        }
+    ]
+}
