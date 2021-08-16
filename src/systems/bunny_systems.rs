@@ -431,7 +431,7 @@ impl System for BunnyMoveSystem {
             }
             // grid.add_vertex((e.1 as usize, e.2 as usize));
 
-            println!("Entity {} reached destination", e.0.id());
+            // println!("Entity {} reached destination", e.0.id());
             let _ = cx.world.despawn(e.0);
             cx.res.with(BunnyCount::default).count -= 1;
         }
@@ -495,7 +495,7 @@ impl System for BunnyTargetingSystem {
                     .len()
                     == 0
                 {
-                    println!("OOOps grid size: {}", grid.vertices_len());
+                    // println!("OOOps grid size: {}", grid.vertices_len());
                     // grid.remove_vertex(&(coords.xcoord as usize, coords.ycoord as usize));
                     for ix in xmin..xmax + 1 {
                         for iy in ymin..ymax + 1 {
@@ -508,7 +508,7 @@ impl System for BunnyTargetingSystem {
                     // movement.state = BunnyMovementState::Idle;
                     continue;
                 } else if grid.neighbours(&(goal.0 as usize, goal.1 as usize)).len() == 0 {
-                    println!("Double OOOps! grid size: {}", grid.vertices_len());
+                    // println!("Double OOOps! grid size: {}", grid.vertices_len());
                     // grid.remove_vertex(&(coords.xcoord as usize, coords.ycoord as usize));
                     for ix in xmin..xmax + 1 {
                         for iy in ymin..ymax + 1 {
@@ -718,7 +718,7 @@ impl System for BunnyTTLSystem {
             ttl.lived += delta;
 
             if ttl.lived >= ttl.ttl {
-                println!("Entity {} died", _entity.id());
+                // println!("Entity {} died", _entity.id());
                 despawn.push((_entity, coords.xcoord, coords.ycoord, coords.size));
             }
         }
@@ -821,7 +821,7 @@ impl System for BunnyHealthSystem {
             .with::<Bunny>()
         {
             if health.health <= 0.0 {
-                println!("Entity {} killed", _entity.id());
+                // println!("Entity {} killed", _entity.id());
                 despawn.push((_entity, coords.xcoord, coords.ycoord, coords.size));
             }
         }
@@ -836,7 +836,7 @@ impl System for BunnyHealthSystem {
                     grid.add_vertex(((e.1 + ix) as usize, (e.2 + iy) as usize));
                 }
             }
-            println!("{} was killed in action", e.0.id());
+            // println!("{} was killed in action", e.0.id());
 
             let _ = cx.world.despawn(e.0);
             cx.res.with(BunnyCount::default).count -= 1;

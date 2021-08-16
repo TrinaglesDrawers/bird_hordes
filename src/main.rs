@@ -1,3 +1,5 @@
+#![windows_subsystem = "windows"]
+
 use crate::na::Isometry3;
 use crate::na::Vector3;
 use crate::systems::bunny_camera::BunnyCamera;
@@ -21,7 +23,7 @@ mod systems {
     pub mod tower_systems;
 }
 
-//TODO: move sound to other file 
+//TODO: move sound to other file
 extern crate sdl2;
 
 use sdl2::audio::{AudioCVT, AudioCallback, AudioSpecDesired, AudioSpecWAV};
@@ -58,7 +60,6 @@ impl AudioCallback for Sound {
         }
     }
 }
-
 
 #[derive(Clone, Debug)]
 struct Bunny;
@@ -546,32 +547,33 @@ fn main() {
         samples: None,     // default
     };
 
-    let device = audio_subsystem.open_playback(None, &desired_spec, |spec| {
-        let wav = AudioSpecWAV::load_wav(wav_file).expect("Could not load test WAV file");
+    let device = audio_subsystem
+        .open_playback(None, &desired_spec, |spec| {
+            let wav = AudioSpecWAV::load_wav(wav_file).expect("Could not load test WAV file");
 
-        let cvt = AudioCVT::new(
-            wav.format,
-            wav.channels,
-            wav.freq,
-            spec.format,
-            spec.channels,
-            spec.freq,
-        )
-        .expect("Could not convert WAV file");
+            let cvt = AudioCVT::new(
+                wav.format,
+                wav.channels,
+                wav.freq,
+                spec.format,
+                spec.channels,
+                spec.freq,
+            )
+            .expect("Could not convert WAV file");
 
-        let data = cvt.convert(wav.buffer().to_vec());
+            let data = cvt.convert(wav.buffer().to_vec());
 
-        // initialize the audio callback
-        Sound {
-            data: data,
-            volume: 0.25,
-            pos: 0,
-        }
-    }).unwrap();
+            // initialize the audio callback
+            Sound {
+                data: data,
+                volume: 0.25,
+                pos: 0,
+            }
+        })
+        .unwrap();
 
     // Start playback
     device.resume();
-
 
     game3(|mut game| async move {
         game.renderer = Some(Box::new(renderer::vcolor::VcolorRenderer::new(
@@ -719,14 +721,14 @@ fn main() {
         // let collider = ColliderBuilder::cuboid(100.0, 0.1, 100.0).build();
         // collider_set.insert(collider);
 
-        game.scheduler.add_fixed_system(
-            |cx: SystemContext<'_>| {
-                if let Some(bunny) = cx.res.get::<BunnyCount>() {
-                    println!("{} bunnies", bunny.count);
-                }
-            },
-            TimeSpan::SECOND,
-        );
+        // game.scheduler.add_fixed_system(
+        //     |cx: SystemContext<'_>| {
+        //         if let Some(bunny) = cx.res.get::<BunnyCount>() {
+        //             // println!("{} bunnies", bunny.count);
+        //         }
+        //     },
+        //     TimeSpan::SECOND,
+        // );
         game.scheduler.add_system(BunnyColliderSystem);
 
         game.scheduler.add_system(BunnyCameraSystem);

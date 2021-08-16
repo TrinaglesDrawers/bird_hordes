@@ -62,7 +62,7 @@ impl InputCommander for BunnyCamera3Controller {
                 button: button_id,
                 state: element_state,
             } => {
-                println!("Button {} {}", button_id, element_state as i32);
+                // println!("Button {} {}", button_id, element_state as i32);
 
                 Some(BunnyCamera3Command::MouseClicked(true))
             }
