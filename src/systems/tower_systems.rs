@@ -47,11 +47,14 @@ impl System for TowerColliderSystem {
             }
 
             for _other_collider in intersections.drain_intersecting_stopped() {
-                let bits = physics.colliders.get(_other_collider).unwrap().user_data as u64;
+                if physics.colliders.get(_other_collider).is_some() {
+                    let bits = physics.colliders.get(_other_collider).unwrap().user_data as u64;
 
-                if attack.target == Some(bits) {
-                    attack.target = None;
+                    if attack.target == Some(bits) {
+                        attack.target = None;
+                    }
                 }
+
                 // let bullet = cx.world.get::<Bullet>(Entity::from_bits(bits)).is_ok();
 
                 // println!("I am alive");
@@ -126,7 +129,12 @@ impl System for TowerAttackSystem {
                 .world
                 .query_one::<&Global3>(Entity::from_bits(attack.target.unwrap()))
                 .unwrap();
-            let global_other = query.get().unwrap();
+
+            let global_other = query.get();
+            if !global_other.is_some() {
+                continue;
+            }
+            let global_other = global_other.unwrap();
 
             if attack.cooldown <= 0.0 {
                 let collider = cx.res.with(BulletCollider::new).0.clone();
@@ -134,30 +142,37 @@ impl System for TowerAttackSystem {
 
                 let spawning_point = na::Vector3::new(
                     global.iso.translation.vector.x,
-                    global.iso.translation.vector.y + 1.0,
+                    global.iso.translation.vector.y + 0.3,
                     global.iso.translation.vector.z,
                 );
 
-                let dir = (global_other.iso.translation.vector + na::Vector3::new(0.0, 0.2, 0.0))
-                    - spawning_point;
-                // for (pos, dir) in bullets {
-                let body = physics
-                    .bodies
-                    .insert(RigidBodyBuilder::new_dynamic().linvel(dir * 5.0).build());
+                let dir = ((global_other.iso.translation.vector + na::Vector3::new(0.0, 0.1, 0.0))
+                    - spawning_point)
+                    .normalize();
+                // println!(
+                //     "Bullet spawning: {}; target: {}",
+                //     spawning_point, global_other.iso.translation.vector
+                // );
+
+                let mut rb = RigidBodyBuilder::new_dynamic()
+                    .position(na::Isometry3::new(
+                        spawning_point,
+                        na::Vector3::y() * std::f32::consts::FRAC_1_PI,
+                    ))
+                    .linear_damping(0.033)
+                    .ccd_enabled(true)
+                    .additional_mass(0.2)
+                    // .linvel(dir * 15.0)
+                    .build();
+
+                rb.apply_force(dir * 150.0, true);
+                let body = physics.bodies.insert(rb);
                 physics
                     .colliders
                     .insert_with_parent(collider.clone(), body, &mut physics.bodies);
 
-                tospawn.push((spawning_point, body, attack.power));
+                tospawn.push((spawning_point, body, attack.power, dir));
                 attack.cooldown = attack.full_cooldown;
-                // cx.world.spawn((
-                //     Global3::new(na::Translation3::from(spawning_point).into()),
-                //     Bullet,
-                //     body,
-                //     ContactQueue3::new(),
-                //     LifeSpan::new(TimeSpan::SECOND),
-                // ));
-                // }
             }
         }
 
@@ -166,7 +181,11 @@ impl System for TowerAttackSystem {
                 &"69df487b-6fea-4fec-8bc4-8e91eb7b1a93".parse().unwrap(),
             );
             let bullet_entity = cx.world.spawn((
-                Global3::new(na::Translation3::from(e.0).into()),
+                Global3::new(na::Isometry3::new(
+                    e.0,
+                    na::Vector3::y() * std::f32::consts::FRAC_1_PI,
+                )),
+                // Global3::new(na::Translation3::from(e.0).into()),
                 Bullet,
                 e.1,
                 ContactQueue3::new(),
@@ -232,20 +251,23 @@ impl System for BulletSystem {
             // if queue.drain_contacts_started().count() > 0 {
             let mut first = true;
             for _other_collider in queue.drain_contacts_started() {
-                let bits = physics.colliders.get(_other_collider).unwrap().user_data as u64;
+                if physics.colliders.get(_other_collider).is_some() {
+                    let bits = physics.colliders.get(_other_collider).unwrap().user_data as u64;
 
-                let bunny = cx.world.get::<Bunny>(Entity::from_bits(bits));
+                    let bunny = cx.world.get::<Bunny>(Entity::from_bits(bits));
 
-                if !bunny.is_ok() {
-                    continue;
+                    if !bunny.is_ok() {
+                        continue;
+                    }
+
+                    bunny_hit.push((bits, power.power));
                 }
-
-                bunny_hit.push((bits, power.power));
 
                 if first {
                     despawn.push(e);
                     first = false;
                 }
+                // despawn.push(e);
             }
             // }
             queue.drain_contacts_stopped();

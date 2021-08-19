@@ -1,4 +1,4 @@
-#![windows_subsystem = "windows"]
+// #![windows_subsystem = "windows"]
 
 use crate::na::Isometry3;
 use crate::na::Vector3;
@@ -730,7 +730,7 @@ fn main() {
         //     TimeSpan::SECOND,
         // );
         game.scheduler.add_system(BunnyColliderSystem);
-
+        //
         game.scheduler.add_system(BunnyCameraSystem);
 
         game.scheduler.add_system(TowerColliderSystem);
