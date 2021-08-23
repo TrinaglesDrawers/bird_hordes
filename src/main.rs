@@ -1,4 +1,4 @@
-// #![windows_subsystem = "windows"]
+#![windows_subsystem = "windows"]
 
 use crate::na::Isometry3;
 use crate::na::Vector3;
@@ -153,7 +153,7 @@ impl Bunny {
                 //     )
                 //     .into(),
                 // )
-                .additional_mass(size as f32)
+                .additional_mass(size as f32 * 2.0)
                 // .mass(size as f32)
                 .linear_damping(0.3)
                 .angular_damping(0.3)
@@ -163,6 +163,7 @@ impl Bunny {
         collider_set.insert_with_parent(
             ColliderBuilder::capsule_y(scale.0.y, (params.steps.0 * size as f32) / 2.0)
                 .active_events(ActiveEvents::all())
+                .density(2.1)
                 .build(),
             body,
             &mut bodies_set,
@@ -429,9 +430,9 @@ impl Tower {
         // );
 
         let mut collider = ColliderBuilder::ball(params.steps.0 * 10.0)
-            .active_events(ActiveEvents::all())
+            .active_events(ActiveEvents::INTERSECTION_EVENTS)
             .sensor(true)
-            .density(0.0)
+            // .density(0.0)
             .translation(na::Vector3::new(
                 (params.steps.0 * xcoord as f32 + params.steps.0 * (xcoord + 1) as f32) / 2.0
                     - params.physical_len.0 / 2.0,

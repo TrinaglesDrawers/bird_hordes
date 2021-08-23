@@ -80,6 +80,7 @@ impl BulletCollider {
         BulletCollider(
             ColliderBuilder::ball(0.1)
                 .active_events(ActiveEvents::CONTACT_EVENTS)
+                .density(1.3)
                 .build(),
         )
     }
